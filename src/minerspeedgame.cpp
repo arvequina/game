@@ -34,11 +34,11 @@ void MinerSpeedGame::Update() {
 			// substract initial point
 			mPosBeginX -= 330.0f;
 			mPosBeginY -= 75.0f;
-
-			// calculate column and row
-			if (mPosBeginX > 0.001f && mPosBeginY > 0.001f && mPosBeginX < 8 * 43.0f && mPosBeginY < 8 * 43.0f) {
-				mColumn = int(mPosBeginX) / 43.0f;
-				mRow = int(mPosBeginY) / 43.0f;
+			const float pos_increment = 43.0f;
+			// calculate column and row (FIXME: add epsilon trait for comparison)
+			if (mPosBeginX > 0.001f && mPosBeginY > 0.001f && mPosBeginX < 8 * 43.0f && mPosBeginY < 8 * pos_increment) {
+				mColumn = int(mPosBeginX) / pos_increment;
+				mRow = int(mPosBeginY) / pos_increment;
 			}
 			std::cout << "[DEBUG] column : " << mColumn << std::endl;
 			std::cout << "[DEBUG] row : " << mRow << std::endl;
