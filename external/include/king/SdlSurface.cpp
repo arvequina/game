@@ -17,7 +17,6 @@ namespace King {
 		}
 		glGenTextures(1, mTextureId.get());
 		glBindTexture(GL_TEXTURE_2D, *mTextureId);
-		std::cout << "[DEBUG] bytes per pixel : " << mSurface->format->BytesPerPixel;
 		int mode;
 		switch (mSurface->format->BytesPerPixel) {
 		case 4:

@@ -1,2 +1,4 @@
-﻿  Engine.cpp
-  Worktest.vcxproj -> C:\Users\svra\Documents\King_test\bin\Worktest.exe
+﻿  main.cpp
+c:\users\svra\documents\kinggame\game\src\main.cpp(51): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
+c:\users\svra\documents\kinggame\game\src\main.cpp(52): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
+  Worktest.vcxproj -> C:\Users\svra\Documents\KingGame\game\bin\Worktest.exe
