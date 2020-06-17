@@ -44,6 +44,8 @@ namespace King {
 
 		void fillScene();
 
+		void setStonePosition(const int row, const int column, const float mouseX, const float mouseY);
+
 		int GetWidth() const;
 		int GetHeight() const;
 

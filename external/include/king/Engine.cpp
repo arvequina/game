@@ -35,6 +35,7 @@ namespace King {
 		void initialize();
 		const std::pair<float, float>(&getPositions() const)[8][8];
 		const King::Engine::Texture(&getColor() const)[8][8];
+		void setPositions(const int row, const int column, const float mouseX, const float mouseY);
 	private:
 		std::pair<float, float> mPositions[8][8];
 		King::Engine::Texture mColors[8][8];
@@ -269,6 +270,10 @@ namespace King {
 		//mEngine.Write("Blue", 650.0f, 490.0f);
 	}
 
+	void Engine::setStonePosition(const int row, const int column, const float mouseX, const float mouseY) {
+		mPimpl->mGameGrid->setPositions(row, column, mouseX, mouseY);
+	}
+
 	void Engine::EngineImplementation::Start() {
 		while (!mQuit) {
 			SDL_GL_SwapWindow(mSdlWindow);
@@ -337,6 +342,11 @@ namespace King {
 	const std::pair<float, float>(&Engine::GameGrid::getPositions() const)[8][8]
 	{
 		return mPositions;
+	}
+
+	void Engine::GameGrid::setPositions(const int row, const int column, const float mouseX, const float mouseY)
+	{
+		mPositions[row][column] = std::pair<float, float>(mouseX, mouseY);
 	}
 	
 	const King::Engine::Texture(&Engine::GameGrid::getColor() const)[8][8]
