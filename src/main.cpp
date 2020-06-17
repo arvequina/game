@@ -11,8 +11,8 @@ public:
 	ExampleGame()
 		: mEngine("./assets"),
 		  mRotation(0.0f),
-		  mYellowDiamondX(100.0f),
-		  mYellowDiamondY(100.0f) 
+		  mPosX(0.0f),
+		  mPosY(0.0f) 
 	{}
 
 	void Start() {
@@ -26,8 +26,18 @@ public:
 		//mEngine.Write(text, mEngine.GetWidth() / 2.0f, mEngine.GetHeight() / 2.0f, mRotation * 2.5f);
 
 		if (mEngine.GetMouseButtonDown()) {
-			mYellowDiamondX = mEngine.GetMouseX();
-			mYellowDiamondY = mEngine.GetMouseY();
+			// check mouse pos and intersection in the 8x8 grid
+			mPosX = mEngine.GetMouseX();
+			mPosY = mEngine.GetMouseY();
+			// check if any stone gets selected
+			// ...
+		}
+		if (mEngine.GetMouseButtonUp()) {
+			mEngine.SetMouseButtonUp(false);
+			mPosX = mEngine.GetMouseX();
+			mPosY = mEngine.GetMouseY();
+			// check swap of stones
+			// ...
 		}
 		//mEngine.Render(King::Engine::TEXTURE_YELLOW, mYellowDiamondX, mYellowDiamondY);
 		//mEngine.Write("Click to", mYellowDiamondX, mYellowDiamondY + 40.0f);
@@ -37,8 +47,8 @@ public:
 private:
 	King::Engine mEngine;
 	float mRotation;
-	float mYellowDiamondX;
-	float mYellowDiamondY;
+	float mPosX;
+	float mPosY;
 };
 
 //**********************************************************************
