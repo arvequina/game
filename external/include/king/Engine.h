@@ -26,8 +26,9 @@ namespace King {
 		float GetMouseX() const;
 		float GetMouseY() const;
 		bool GetMouseButtonDown() const;
+		void SetMouseButtonDown(const bool state);
 		bool GetMouseButtonUp() const;
-		void SetMouseButtonUp(bool state);
+		void SetMouseButtonUp(const bool state);
 		
 		void Start(Updater& updater);
 		void Quit();
@@ -45,6 +46,7 @@ namespace King {
 		void fillScene();
 
 		void setStonePosition(const int row, const int column, const float mouseX, const float mouseY);
+		void setStoneColor(const int row, const int column, const int directionX, const int directionY);
 
 		int GetWidth() const;
 		int GetHeight() const;

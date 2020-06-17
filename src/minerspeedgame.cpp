@@ -57,12 +57,25 @@ void MinerSpeedGame::Update() {
 			mPosEndY -= 75.0f;
 			const float pos_increment = 43.0f;
 			// calculate column and row (FIXME: add epsilon trait for comparison)
-			if (mPosEndX > 0.001f && mPosEndY > 0.001f && mPosEndX < 8 * 43.0f && mPosEndY < 8 * pos_increment) {
-				mColumn = int(mPosEndX) / pos_increment;
-				mRow = int(mPosEndY) / pos_increment;
+			int column = mColumn;
+			int row = mRow;
+			if (mPosEndX > 0.001f && mPosEndY > 0.001f && mPosEndX < 8 * pos_increment && mPosEndY < 8 * pos_increment) {
+				column = int(mPosEndX) / pos_increment;
+				row = int(mPosEndY) / pos_increment;
 			}
 			std::cout << "[DEBUG] END column : " << mColumn << std::endl;
 			std::cout << "[DEBUG] END row : " << mRow << std::endl;
+			if (row >= 0 && abs(mRow - row) == 1) {
+				// do row swap
+				mEngine.setStoneColor(mRow, mColumn, 0, row - mRow);
+				// just allow one swap
+				mEngine.SetMouseButtonDown(false);
+			} else if (column >= 0 && abs(mColumn - column) == 1) {
+				// do column swap
+				mEngine.setStoneColor(mRow, mColumn, column - mColumn, 0);
+				// just allow one swap
+				mEngine.SetMouseButtonDown(false);
+			}
 			//mEngine.setStonePosition(mRow, mColumn, mEngine.GetMouseX() - 330.0f, mEngine.GetMouseY() - 75.0f);
 		}
 
