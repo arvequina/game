@@ -40,14 +40,30 @@ void MinerSpeedGame::Update() {
 				mColumn = int(mPosBeginX) / pos_increment;
 				mRow = int(mPosBeginY) / pos_increment;
 			}
-			std::cout << "[DEBUG] column : " << mColumn << std::endl;
-			std::cout << "[DEBUG] row : " << mRow << std::endl;
+			std::cout << "[DEBUG] START column : " << mColumn << std::endl;
+			std::cout << "[DEBUG] START row : " << mRow << std::endl;
 			mFirst = false;
 		}
 		else {
 			// move selected stone
 			// ...
-			mEngine.setStonePosition(mRow, mColumn, mEngine.GetMouseX() - 330.0f, mEngine.GetMouseY() - 75.0f);
+			// check mouse pos and intersection in the 8x8 grid
+			mPosEndX = mEngine.GetMouseX();
+			mPosEndY = mEngine.GetMouseY();
+			// check if any stone gets selected
+			// ...
+			// substract initial point
+			mPosEndX -= 330.0f;
+			mPosEndY -= 75.0f;
+			const float pos_increment = 43.0f;
+			// calculate column and row (FIXME: add epsilon trait for comparison)
+			if (mPosEndX > 0.001f && mPosEndY > 0.001f && mPosEndX < 8 * 43.0f && mPosEndY < 8 * pos_increment) {
+				mColumn = int(mPosEndX) / pos_increment;
+				mRow = int(mPosEndY) / pos_increment;
+			}
+			std::cout << "[DEBUG] END column : " << mColumn << std::endl;
+			std::cout << "[DEBUG] END row : " << mRow << std::endl;
+			//mEngine.setStonePosition(mRow, mColumn, mEngine.GetMouseX() - 330.0f, mEngine.GetMouseY() - 75.0f);
 		}
 
 	}
