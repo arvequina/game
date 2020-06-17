@@ -66,12 +66,12 @@ void MinerSpeedGame::Update() {
 			std::cout << "[DEBUG] END column : " << mColumn << std::endl;
 			std::cout << "[DEBUG] END row : " << mRow << std::endl;
 			if (row >= 0 && abs(mRow - row) == 1) {
-				// do row swap
+				// if condition to do swap (3+ stones same color) then do swap
 				mEngine.setStoneColor(mRow, mColumn, 0, row - mRow);
 				// just allow one swap
 				mEngine.SetMouseButtonDown(false);
 			} else if (column >= 0 && abs(mColumn - column) == 1) {
-				// do column swap
+				// if condition to do swap (3+ stones same color) then do swap
 				mEngine.setStoneColor(mRow, mColumn, column - mColumn, 0);
 				// just allow one swap
 				mEngine.SetMouseButtonDown(false);
