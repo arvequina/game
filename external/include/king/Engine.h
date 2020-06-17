@@ -49,6 +49,7 @@ namespace King {
 
 	private:
 		struct EngineImplementation;
+		class GameGrid;
 		std::unique_ptr<EngineImplementation> mPimpl;
 	};
 }

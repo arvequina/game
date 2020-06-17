@@ -40,9 +40,13 @@ public:
 				// check if any stone gets selected
 				// ...
 				// substract initial point
+				//std::cout << "[DEBUG] BEGIN mPosBeginX : " << mPosBeginX << std::endl;
+				//std::cout << "[DEBUG] BEGIN mPosBeginY : " << mPosBeginY << std::endl;
 				mPosBeginX -= 330.0f;
 				mPosBeginY -= 75.0f;
-				
+				//std::cout << "[DEBUG] AFTER mPosBeginX : " << mPosBeginX << std::endl;
+				//std::cout << "[DEBUG] AFTER mPosBeginY : " << mPosBeginY << std::endl;
+
 				// calculate column and row
 				if (mPosBeginX > 0.001f && mPosBeginY > 0.001f && mPosBeginX < 8 * 43.0f && mPosBeginY < 8 * 43.0f) {
 					column = int(mPosBeginX) / 43.0f;

@@ -255,6 +255,7 @@ namespace King {
 		const float pos_y_ini = 100.0f;
 		for (int row = 0; row < 8; ++row) {
 			for (int column = 0; column < 8; ++column) {
+				//Render(King::Engine::TEXTURE_GREEN, 0, 0);//mPimpl->mGameGrid->getPositions()[row][column].first, mPimpl->mGameGrid->getPositions()[row][column].first);
 				Render(mPimpl->mGameGrid->getColor()[row][column], pos_x_ini + mPimpl->mGameGrid->getPositions()[row][column].first, 
 					                                pos_y_ini + mPimpl->mGameGrid->getPositions()[row][column].second);
 			}
@@ -329,7 +330,11 @@ namespace King {
 			for (int column = 0; column < 8; ++column) {
 				mPositions[row][column].first = posX + column * pos_increment;
 				mPositions[row][column].second = posY + row * pos_increment;
-				mColors[row][column] = (King::Engine::Texture)(rand() % 5 + 1);
+				mColors[row][column] = (King::Engine::Texture)(rand() % 5 + 1); //TEXTURE_BLUE,TEXTURE_GREEN,TEXTURE_PURPLE,TEXTURE_RED,TEXTURE_YELLOW,
+				//std::cout << "[DEBUG] column : " << column << std::endl;
+				//std::cout << "[DEBUG] row : " << row << std::endl;
+				//std::cout << "[DEBUG] mPositions [0][0] first : " << mPositions[row][column].first << std::endl;
+				//std::cout << "[DEBUG] mPositions [0][0] second : " << mPositions[row][column].second << std::endl;
 			}
 		}
 	}
