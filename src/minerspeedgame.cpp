@@ -39,11 +39,13 @@ void MinerSpeedGame::mouseClickEvent(const bool mouseClick) {
 			mPosBeginY = mEngine.GetMouseY();
 			// substract initial point
 			mPosBeginX -= 330.0f;
-			mPosBeginY -= 75.0f;
+			mPosBeginY -= 100.0f;
 			const float pos_increment = 43.0f;
 			// FIXME: add variable SELECTED for each stone
 			// calculate column and row (FIXME: add epsilon trait for comparison)
-			if (mPosBeginX > 0.001f && mPosBeginY > 0.001f && mPosBeginX < 8 * 43.0f && mPosBeginY < 8 * pos_increment) {
+			mColumn = -1;
+			mRow = -1;
+			if (mPosBeginX > 0.0f && mPosBeginY > 0.0f && mPosBeginX < 8 * pos_increment && mPosBeginY < 8 * pos_increment) {
 				mColumn = int(mPosBeginX) / pos_increment;
 				mRow = int(mPosBeginY) / pos_increment;
 			}
@@ -56,18 +58,20 @@ void MinerSpeedGame::mouseClickEvent(const bool mouseClick) {
 			mPosEndY = mEngine.GetMouseY();
 			// substract initial point
 			mPosEndX -= 330.0f;
-			mPosEndY -= 75.0f;
+			mPosEndY -= 100.0f;
 			const float pos_increment = 43.0f;
 			// calculate column and row (FIXME: add epsilon trait for comparison)
-			int column = mColumn;
-			int row = mRow;
-			if (mPosEndX > 0.001f && mPosEndY > 0.001f && mPosEndX < 8 * pos_increment && mPosEndY < 8 * pos_increment) {
+			int column = -1;
+			int row = -1;
+			if (mPosEndX > 0.000f && mPosEndY > 0.000f && mPosEndX < 8 * pos_increment && mPosEndY < 8 * pos_increment) {
 				column = int(mPosEndX) / pos_increment;
 				row = int(mPosEndY) / pos_increment;
 			}
 			// check if swap is possible
-			std::cout << "second row/colm" << mRow << mColumn;
-			verifySwap(row, column);
+			std::cout << "second row/colm" << row << column;
+			if (row >-1 && column>-1 && mColumn > -1 && mRow > -1) {
+				verifySwap(row, column);
+			}
 			mFirst = true;
 		}
 	}

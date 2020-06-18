@@ -342,8 +342,8 @@ namespace King {
 	void Engine::GameGrid::initialize() {
 		const float pos_x_ini = 0.0f;
 		const float pos_y_ini = 0.0f;
-		const float pos_x_end = 345.0f;
-		const float pos_y_end = 345.0f;
+		//const float pos_x_end = 345.0f;
+		//const float pos_y_end = 345.0f;
 		const float pos_increment = 43.0f;
 		int column = 0, row = 0;
 		// make it random at some point
