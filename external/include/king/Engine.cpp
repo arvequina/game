@@ -33,10 +33,10 @@ namespace King {
 			initialize();
 		}
 		void initialize();
-		const std::pair<float, float>(&getPositions() const)[8][8];
-		const King::Engine::Texture(&getColor() const)[8][8];
-		void setPositions(const int row, const int column, const float mouseX, const float mouseY);
-		void setColors(const int row, const int column, const int directionX, const int directionY);
+		const std::pair<float, float>(&getStonePositions() const)[8][8];
+		const King::Engine::Texture(&getStoneColors() const)[8][8];
+		void setStonePosition(const int row, const int column, const float mouseX, const float mouseY);
+		void setStoneColor(const int row, const int column, const int directionX, const int directionY);
 	private:
 		std::pair<float, float> mPositions[8][8];
 		King::Engine::Texture mColors[8][8];
@@ -259,10 +259,11 @@ namespace King {
 		Render(King::Engine::TEXTURE_BACKGROUND, 0.0f, 0.0f);
 		const float pos_x_ini = 330.0f;
 		const float pos_y_ini = 100.0f;
+		// nested loop of 8 by 8 (low computing cost)
 		for (int row = 0; row < 8; ++row) {
 			for (int column = 0; column < 8; ++column) {
-				Render(mPimpl->mGameGrid->getColor()[row][column], pos_x_ini + mPimpl->mGameGrid->getPositions()[row][column].first, 
-					                                pos_y_ini + mPimpl->mGameGrid->getPositions()[row][column].second);
+				Render(mPimpl->mGameGrid->getStoneColors()[row][column], pos_x_ini + mPimpl->mGameGrid->getStonePositions()[row][column].first, 
+					                                pos_y_ini + mPimpl->mGameGrid->getStonePositions()[row][column].second);
 			}
 		}
 
@@ -272,11 +273,19 @@ namespace King {
 	}
 
 	void Engine::setStonePosition(const int row, const int column, const float mouseX, const float mouseY) {
-		mPimpl->mGameGrid->setPositions(row, column, mouseX, mouseY);
+		mPimpl->mGameGrid->setStonePosition(row, column, mouseX, mouseY);
+	}
+
+	const std::pair<float, float>(&Engine::getStonePositions() const)[8][8] {
+		return mPimpl->mGameGrid->getStonePositions();
 	}
 
 	void Engine::setStoneColor(const int row, const int column, const int directionX, const int directionY) {
-		mPimpl->mGameGrid->setColors(row, column, directionX, directionY);
+		mPimpl->mGameGrid->setStoneColor(row, column, directionX, directionY);
+	}
+
+	const King::Engine::Texture(&Engine::getStoneColors() const)[8][8] {
+		return mPimpl->mGameGrid->getStoneColors();
 	}
 
 	void Engine::EngineImplementation::Start() {
@@ -344,22 +353,22 @@ namespace King {
 		}
 	}
 
-	const std::pair<float, float>(&Engine::GameGrid::getPositions() const)[8][8]
-	{
-		return mPositions;
-	}
-
-	void Engine::GameGrid::setPositions(const int row, const int column, const float mouseX, const float mouseY)
+	void Engine::GameGrid::setStonePosition(const int row, const int column, const float mouseX, const float mouseY)
 	{
 		mPositions[row][column] = std::pair<float, float>(mouseX, mouseY);
 	}
 
-	void Engine::GameGrid::setColors(const int row, const int column, const int directionX, const int directionY)
+	const std::pair<float, float>(&Engine::GameGrid::getStonePositions() const)[8][8]
+	{
+		return mPositions;
+	}
+
+	void Engine::GameGrid::setStoneColor(const int row, const int column, const int directionX, const int directionY)
 	{
 		std::swap(mColors[row + directionY][column + directionX], mColors[row][column]);
 	}
 	
-	const King::Engine::Texture(&Engine::GameGrid::getColor() const)[8][8]
+	const King::Engine::Texture(&Engine::GameGrid::getStoneColors() const)[8][8]
 	{
 		return mColors;
 	}

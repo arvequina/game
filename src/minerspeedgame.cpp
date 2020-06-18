@@ -68,21 +68,9 @@ void MinerSpeedGame::mouseClickEvent(const bool mouseClick) {
 			}
 			//std::cout << "[DEBUG] END column : " << mColumn << std::endl;
 			//std::cout << "[DEBUG] END row : " << mRow << std::endl;
-			// only allow row and column-wise moves
-			if (row >= 0 && abs(mRow - row) == 1) {
-				// if condition to do swap (3+ stones same color) then do swap
-				mEngine.setStoneColor(mRow, mColumn, 0, row - mRow);
-				// just allow one swap
-				mEngine.SetMouseButtonDown(false);
-			} else if (column >= 0 && abs(mColumn - column) == 1) {
-				// if condition to do swap (3+ stones same color) then do swap
-				mEngine.setStoneColor(mRow, mColumn, column - mColumn, 0);
-				// just allow one swap
-				mEngine.SetMouseButtonDown(false);
-			}
-			//mEngine.setStonePosition(mRow, mColumn, mEngine.GetMouseX() - 330.0f, mEngine.GetMouseY() - 75.0f);
+			// check if swap is possible
+			verifySwap(row, column);
 		}
-
 	}
 }
 
@@ -95,6 +83,91 @@ void MinerSpeedGame::mouseReleaseEvent(const bool mouseRelease) {
 		// check swap of stones if possible
 		// ...
 	}
+}
+
+void MinerSpeedGame::verifySwap(const int row, const int column) {
+	// only allow row and column-wise moves
+	if (row >= 0 && abs(mRow - row) == 1) {
+		// if condition to do swap (3+ stones same color) then do swap
+		verifyStoneCombinations(row, column);
+		mEngine.setStoneColor(mRow, mColumn, 0, row - mRow);
+		// just allow one swap
+		mEngine.SetMouseButtonDown(false);
+	}
+	else if (column >= 0 && abs(mColumn - column) == 1) {
+		// if condition to do swap (3+ stones same color) then do swap
+		verifyStoneCombinations(row, column);
+		mEngine.setStoneColor(mRow, mColumn, column - mColumn, 0);
+		// just allow one swap
+		mEngine.SetMouseButtonDown(false);
+	}
+	//mEngine.setStonePosition(mRow, mColumn, mEngine.GetMouseX() - 330.0f, mEngine.GetMouseY() - 75.0f);
+}
+
+void MinerSpeedGame::verifyStoneCombinations(const int row, const int column) {
+	auto stoneColors = mEngine.getStoneColors();
+	King::Engine::Texture nextStoneColor = stoneColors[row][column];
+	King::Engine::Texture currentStoneColor = stoneColors[mRow][mColumn];
+	// CURRENT stone
+	// row-wise verification (left/right)
+	// left 
+	int xLeft = column - 1, xRight = column + 1;
+	bool leftEnd = false, rightEnd = false;
+	std::cout << "[DEBUG] currentStoneColor : " << currentStoneColor;
+	while ((xLeft >= 0 || xRight < 8) && !(leftEnd && rightEnd)) {
+		std::cout << "[DEBUG] stoneColor row - xLeft : " << row << " - " << xLeft << " is -> " << stoneColors[row][xLeft] << std::endl;
+		if (xLeft >= 0 && stoneColors[row][xLeft] == currentStoneColor) {
+			--xLeft;
+		} else {
+			leftEnd = true;
+		}
+		std::cout << "[DEBUG] stoneColor row - xRight : " << row << " - " << xRight << " is -> " << stoneColors[row][xRight] << std::endl;
+		if (xRight < 8 && stoneColors[row][xRight] == currentStoneColor) {
+			++xRight;
+		} else {
+			rightEnd = true;
+		}
+	}
+	// if 3 or more, remove stones
+	int rowOfStones = xRight - (xLeft + 1);
+	
+	// **** COLUMN ****
+	//std::cout << "[DEBUG] BEGIN rowOfStones : " << rowOfStones << std::endl;
+	//std::cout << "[DEBUG] xLeft : " << xLeft << std::endl;
+	//std::cout << "[DEBUG] END xRight : " << xRight << std::endl;
+	// column-wise verification (up/down)
+	int yDown = row + 1, yUp = row - 1;
+	bool downEnd = false, upEnd = false;
+	while ((yUp >= 0 || yDown < 8) && !(downEnd && upEnd)) {
+		if (yUp >= 0 && stoneColors[yUp][column] == currentStoneColor) {
+			--yUp;
+		} else {
+			upEnd = true;
+		}
+		if (yDown < 8 && stoneColors[yDown][column] == currentStoneColor) {
+			++yDown;
+		} else {
+			downEnd = true;
+		}
+	}
+	// if 3 or more, remove stones
+	int columnOfStones = yDown - (yUp + 1);
+	//std::cout << "[DEBUG] BEGIN columnOfStones : " << columnOfStones << std::endl;
+	//std::cout << "[DEBUG] yDown : " << yDown << std::endl;
+	//std::cout << "[DEBUG] END yUp : " << yUp << std::endl;
+
+	// *****************************************************
+
+	// NEXT stone
+	// row-wise verification (left/right)
+	//for () {}
+	// column-wise verification (up/down)
+	//for () {}
+	//std::cout << "[DEBUG] stoneColor row - column : " << row << " - " << column << " is -> " << stoneColors[row][column] << std::endl;
+	//std::cout << "[DEBUG] xLeft : " << xLeft << std::endl;
+	//std::cout << "[DEBUG] xRight : " << xRight << std::endl;
+	//std::cout << "[DEBUG] leftEnd : " << leftEnd << std::endl;
+	//std::cout << "[DEBUG] rightEnd : " << rightEnd << std::endl;
 }
 
 // FIXME: rotation just in case
