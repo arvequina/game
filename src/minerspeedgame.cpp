@@ -26,7 +26,7 @@ void MinerSpeedGame::Update() {
 
 void MinerSpeedGame::VerifyMouseEvents() {
 	// mouse click
-	mouseClickEvent(mEngine.GetMouseButtonDown());
+	mouseClickEvent(mEngine.GetMouseButtonUp());
 	// mouse release
 	mouseReleaseEvent(mEngine.GetMouseButtonUp());
 }
@@ -47,6 +47,7 @@ void MinerSpeedGame::mouseClickEvent(const bool mouseClick) {
 				mColumn = int(mPosBeginX) / pos_increment;
 				mRow = int(mPosBeginY) / pos_increment;
 			}
+			std::cout << "first row/colm" << mRow << mColumn;
 			mFirst = false;
 		} else { 
 			// DRAGGING scenario
@@ -65,14 +66,16 @@ void MinerSpeedGame::mouseClickEvent(const bool mouseClick) {
 				row = int(mPosEndY) / pos_increment;
 			}
 			// check if swap is possible
+			std::cout << "second row/colm" << mRow << mColumn;
 			verifySwap(row, column);
+			mFirst = true;
 		}
 	}
 }
 
 void MinerSpeedGame::mouseReleaseEvent(const bool mouseRelease) {
 	if (mouseRelease) {
-		mFirst = true;
+		//mFirst = true;
 		mEngine.SetMouseButtonUp(false);
 		mPosEndX = mEngine.GetMouseX();
 		mPosEndY = mEngine.GetMouseY();
