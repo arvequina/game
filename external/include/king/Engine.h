@@ -46,8 +46,10 @@ namespace King {
 		void fillScene();
 
 		void setStonePosition(const int row, const int column, const float mouseX, const float mouseY);
-		void setStoneColor(const int row, const int column, const int directionX, const int directionY);
-		bool checkForStoneMatch(const int row, const int column, const int directionX, const int directionY);
+		const std::pair<float, float>(&getStonePositions() const)[8][8];
+		void swapStoneColor(const int row, const int column, const int directionX, const int directionY);
+		void setStoneColor(const int row, const int column, King::Engine::Texture color);
+		const King::Engine::Texture(&getStoneColors() const)[8][8];
 
 		int GetWidth() const;
 		int GetHeight() const;
