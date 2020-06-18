@@ -47,6 +47,7 @@ namespace King {
 
 		void setStonePosition(const int row, const int column, const float mouseX, const float mouseY);
 		void setStoneColor(const int row, const int column, const int directionX, const int directionY);
+		bool checkForStoneMatch(const int row, const int column, const int directionX, const int directionY);
 
 		int GetWidth() const;
 		int GetHeight() const;

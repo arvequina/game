@@ -279,6 +279,11 @@ namespace King {
 		mPimpl->mGameGrid->setColors(row, column, directionX, directionY);
 	}
 
+	bool Engine::checkForStoneMatch(const int row, const int column, const int directionX, const int directionY) {
+		// did this swap endup in a stone match
+		return false;
+	}
+
 	void Engine::EngineImplementation::Start() {
 		while (!mQuit) {
 			SDL_GL_SwapWindow(mSdlWindow);

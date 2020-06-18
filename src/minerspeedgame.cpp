@@ -65,15 +65,35 @@ void MinerSpeedGame::Update() {
 			}
 			std::cout << "[DEBUG] END column : " << mColumn << std::endl;
 			std::cout << "[DEBUG] END row : " << mRow << std::endl;
+			int directionX;
+			int directionY;
+			bool swapped = false;
 			if (row >= 0 && abs(mRow - row) == 1) {
 				// if condition to do swap (3+ stones same color) then do swap
-				mEngine.setStoneColor(mRow, mColumn, 0, row - mRow);
+				directionX = 0;
+				directionY = row - mRow;
+				swapped = true;
 				// just allow one swap
 				mEngine.SetMouseButtonDown(false);
-			} else if (column >= 0 && abs(mColumn - column) == 1) {
+			}
+			else if (column >= 0 && abs(mColumn - column) == 1) {
 				// if condition to do swap (3+ stones same color) then do swap
-				mEngine.setStoneColor(mRow, mColumn, column - mColumn, 0);
+				directionX = column - mColumn;
+				directionY = 0;
+				swapped = true;
 				// just allow one swap
+				mEngine.SetMouseButtonDown(false);
+			}
+			if (swapped) {
+				mEngine.setStoneColor(mRow, mColumn, directionX, directionY);
+				if (mEngine.checkForStoneMatch(mRow, mColumn, directionX, directionY)) {
+					// swap reulted in color match dod stuff here
+				}
+				else {
+					// the above swap did not result on any thing so swap back
+					mEngine.setStoneColor(mRow, mColumn, directionX, directionY);
+					std::cout << "[DEBUG] swap back";
+				}
 				mEngine.SetMouseButtonDown(false);
 			}
 			//mEngine.setStonePosition(mRow, mColumn, mEngine.GetMouseX() - 330.0f, mEngine.GetMouseY() - 75.0f);
