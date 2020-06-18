@@ -14,6 +14,9 @@ public:
 	void Update();
 
 private:
+	void VerifyMouseEvents();
+	void mouseClickEvent(const bool mouseClick);
+	void mouseReleaseEvent(const bool mouseRelease);
 	King::Engine mEngine;
 	float mRotation;
 	float mPosBeginX;
