@@ -47,8 +47,6 @@ void MinerSpeedGame::mouseClickEvent(const bool mouseClick) {
 				mColumn = int(mPosBeginX) / pos_increment;
 				mRow = int(mPosBeginY) / pos_increment;
 			}
-			//std::cout << "[DEBUG] START column : " << mColumn << std::endl;
-			//std::cout << "[DEBUG] START row : " << mRow << std::endl;
 			mFirst = false;
 		} else { 
 			// DRAGGING scenario
@@ -66,8 +64,6 @@ void MinerSpeedGame::mouseClickEvent(const bool mouseClick) {
 				column = int(mPosEndX) / pos_increment;
 				row = int(mPosEndY) / pos_increment;
 			}
-			//std::cout << "[DEBUG] END column : " << mColumn << std::endl;
-			//std::cout << "[DEBUG] END row : " << mRow << std::endl;
 			// check if swap is possible
 			verifySwap(row, column);
 		}
@@ -89,85 +85,75 @@ void MinerSpeedGame::verifySwap(const int row, const int column) {
 	// only allow row and column-wise moves
 	if (row >= 0 && abs(mRow - row) == 1) {
 		// if condition to do swap (3+ stones same color) then do swap
-		verifyStoneCombinations(row, column);
-		mEngine.setStoneColor(mRow, mColumn, 0, row - mRow);
+		mEngine.swapStoneColor(mRow, mColumn, 0, row - mRow);
+		bool allowed = verifyStoneCombinations(row, column);
+		if (!allowed) {
+		// revert swap
+			mEngine.swapStoneColor(mRow, mColumn, 0, row - mRow);
+		}
 		// just allow one swap
 		mEngine.SetMouseButtonDown(false);
 	}
 	else if (column >= 0 && abs(mColumn - column) == 1) {
 		// if condition to do swap (3+ stones same color) then do swap
-		verifyStoneCombinations(row, column);
-		mEngine.setStoneColor(mRow, mColumn, column - mColumn, 0);
+		mEngine.swapStoneColor(mRow, mColumn, column - mColumn, 0);
+		bool allowed = verifyStoneCombinations(row, column);
+		if (!allowed) {
+			// revert swap
+			mEngine.swapStoneColor(mRow, mColumn, column - mColumn, 0);
+		}
 		// just allow one swap
 		mEngine.SetMouseButtonDown(false);
 	}
-	//mEngine.setStonePosition(mRow, mColumn, mEngine.GetMouseX() - 330.0f, mEngine.GetMouseY() - 75.0f);
 }
 
-void MinerSpeedGame::verifyStoneCombinations(const int row, const int column) {
+bool MinerSpeedGame::verifyStoneCombinations(const int row, const int column) {
+	bool combinationAllowed = false;
 	auto stoneColors = mEngine.getStoneColors();
-	King::Engine::Texture nextStoneColor = stoneColors[row][column];
-	King::Engine::Texture currentStoneColor = stoneColors[mRow][mColumn];
+	King::Engine::Texture currentStoneColor = stoneColors[row][column];
+	King::Engine::Texture nextStoneColor = stoneColors[mRow][mColumn];
 	// CURRENT stone
-	// row-wise verification (left/right)
-	// left 
-	int xLeft = column - 1, xRight = column + 1;
-	bool leftEnd = false, rightEnd = false;
-	std::cout << "[DEBUG] currentStoneColor : " << currentStoneColor;
-	while ((xLeft >= 0 || xRight < 8) && !(leftEnd && rightEnd)) {
-		std::cout << "[DEBUG] stoneColor row - xLeft : " << row << " - " << xLeft << " is -> " << stoneColors[row][xLeft] << std::endl;
-		if (xLeft >= 0 && stoneColors[row][xLeft] == currentStoneColor) {
-			--xLeft;
-		} else {
-			leftEnd = true;
-		}
-		std::cout << "[DEBUG] stoneColor row - xRight : " << row << " - " << xRight << " is -> " << stoneColors[row][xRight] << std::endl;
-		if (xRight < 8 && stoneColors[row][xRight] == currentStoneColor) {
-			++xRight;
-		} else {
-			rightEnd = true;
-		}
-	}
-	// if 3 or more, remove stones
-	int rowOfStones = xRight - (xLeft + 1);
 	
-	// **** COLUMN ****
-	//std::cout << "[DEBUG] BEGIN rowOfStones : " << rowOfStones << std::endl;
-	//std::cout << "[DEBUG] xLeft : " << xLeft << std::endl;
-	//std::cout << "[DEBUG] END xRight : " << xRight << std::endl;
-	// column-wise verification (up/down)
-	int yDown = row + 1, yUp = row - 1;
-	bool downEnd = false, upEnd = false;
-	while ((yUp >= 0 || yDown < 8) && !(downEnd && upEnd)) {
-		if (yUp >= 0 && stoneColors[yUp][column] == currentStoneColor) {
-			--yUp;
-		} else {
-			upEnd = true;
+	// ROW
+	int xPosLeft = column, xPosRight = column; 
+	//bool leftEnd = false, rightEnd = false;
+	while (stoneColors[row][--xPosLeft] == currentStoneColor) {}
+	while (stoneColors[row][++xPosRight] == currentStoneColor) {}
+	int rowOfStones = abs(xPosRight - xPosLeft) - 1;
+	
+	// COLUMN
+	int yPosUp = row, yPosDown = row;
+	while (stoneColors[--yPosUp][column] == currentStoneColor) {}
+	while (stoneColors[++yPosDown][column] == currentStoneColor) {}
+	int columnOfStones = abs(yPosDown - yPosUp) - 1;
+
+	if (rowOfStones >= 3) {
+		combinationAllowed = true;
+		int currentRow = row, currentColumn = xPosLeft + 1;
+		while (currentRow > 0) {
+			for (currentColumn = xPosLeft + 1; currentColumn < xPosRight; ++currentColumn) {
+				mEngine.swapStoneColor(currentRow, currentColumn, 0, -1);
+			}
+			--currentRow;
 		}
-		if (yDown < 8 && stoneColors[yDown][column] == currentStoneColor) {
-			++yDown;
-		} else {
-			downEnd = true;
+		// create new stones
+		for (currentColumn = xPosLeft + 1; currentColumn < xPosRight; ++currentColumn) {
+			mEngine.setStoneColor(currentRow, currentColumn, (King::Engine::Texture)(rand() % 5 + 1));
 		}
 	}
-	// if 3 or more, remove stones
-	int columnOfStones = yDown - (yUp + 1);
-	//std::cout << "[DEBUG] BEGIN columnOfStones : " << columnOfStones << std::endl;
-	//std::cout << "[DEBUG] yDown : " << yDown << std::endl;
-	//std::cout << "[DEBUG] END yUp : " << yUp << std::endl;
-
-	// *****************************************************
-
-	// NEXT stone
-	// row-wise verification (left/right)
-	//for () {}
-	// column-wise verification (up/down)
-	//for () {}
-	//std::cout << "[DEBUG] stoneColor row - column : " << row << " - " << column << " is -> " << stoneColors[row][column] << std::endl;
-	//std::cout << "[DEBUG] xLeft : " << xLeft << std::endl;
-	//std::cout << "[DEBUG] xRight : " << xRight << std::endl;
-	//std::cout << "[DEBUG] leftEnd : " << leftEnd << std::endl;
-	//std::cout << "[DEBUG] rightEnd : " << rightEnd << std::endl;
+	else if (columnOfStones >= 3) {
+		combinationAllowed = true;
+		int currentRow = yPosDown - 1, currentColumn = column;
+		while (currentRow > (yPosDown - 1 - columnOfStones)) {
+			mEngine.swapStoneColor(currentRow, currentColumn, 0, -columnOfStones);
+			--currentRow;
+		}
+		// create new stones
+		for (; currentRow >= 0; --currentRow) {
+			mEngine.setStoneColor(currentRow, currentColumn, (King::Engine::Texture)(rand() % 5 + 1));
+		}
+	}
+	return combinationAllowed;
 }
 
 // FIXME: rotation just in case

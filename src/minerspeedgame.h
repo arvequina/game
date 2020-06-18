@@ -18,7 +18,7 @@ private:
 	void mouseClickEvent(const bool mouseClick);
 	void mouseReleaseEvent(const bool mouseRelease);
 	void verifySwap(const int row, const int column);
-	void verifyStoneCombinations(const int row, const int column);
+	bool verifyStoneCombinations(const int row, const int column);
 	King::Engine mEngine;
 	float mRotation;
 	float mPosBeginX;
