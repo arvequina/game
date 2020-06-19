@@ -1,6 +1,7 @@
 ﻿  minerspeedgame.cpp
-c:\users\svra\documents\kinggame\game\src\minerspeedgame.cpp(40): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
-c:\users\svra\documents\kinggame\game\src\minerspeedgame.cpp(41): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
-c:\users\svra\documents\kinggame\game\src\minerspeedgame.cpp(63): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
-c:\users\svra\documents\kinggame\game\src\minerspeedgame.cpp(64): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
+c:\users\svra\documents\kinggame\game\src\minerspeedgame.cpp(48): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
+c:\users\svra\documents\kinggame\game\src\minerspeedgame.cpp(49): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
+c:\users\svra\documents\kinggame\game\src\minerspeedgame.cpp(66): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
+c:\users\svra\documents\kinggame\game\src\minerspeedgame.cpp(67): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
+c:\users\svra\documents\kinggame\game\src\minerspeedgame.cpp(156): warning C4715: 'MinerSpeedGame::scanPosition': no todas las rutas de acceso de control devuelven un valor
   Worktest.vcxproj -> C:\Users\svra\Documents\KingGame\game\bin\Worktest.exe
