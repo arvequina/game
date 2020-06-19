@@ -18,6 +18,7 @@
 #include "Updater.h"
 
 #include "iostream"
+#include "time.h"
 
 
 namespace King {
@@ -155,6 +156,10 @@ namespace King {
 		mPimpl->mQuit = true;
 	}
 
+	void Engine::initGame() {
+		initializeGrid();
+	}
+
 	void Engine::Start(Updater& updater) {
 		mPimpl->mUpdater = &updater;
 		mPimpl->mSdlWindow.Show();
@@ -169,7 +174,7 @@ namespace King {
 		return mPimpl->mSdlSurfaceContainer[texture]->Width();
 	}
 
-	void Engine::Render(Engine::Texture texture, const glm::mat4& transform) {
+	void Engine::Render(Engine::Texture texture, const glm::mat4& transform, bool remove) {
 		glLoadMatrixf(reinterpret_cast<const float*>(&transform));
 
 		SdlSurface& surface = *mPimpl->mSdlSurfaceContainer[texture];
@@ -177,20 +182,28 @@ namespace King {
 		surface.Bind();
 
 		glBegin(GL_QUADS);
-		glTexCoord2i(0, 1); glVertex2i(0, surface.Height());
-		glTexCoord2i(1, 1); glVertex2i(surface.Width(), surface.Height());
-		glTexCoord2i(1, 0); glVertex2i(surface.Width(), 0);
-		glTexCoord2i(0, 0); glVertex2i(0, 0);
+		//if (remove) {
+		//	glTexCoord2i(0, 1); glVertex2i(0, 0);
+		//	glTexCoord2i(1, 1); glVertex2i(0, 0);
+		//	glTexCoord2i(1, 0); glVertex2i(0, 0);
+		//	glTexCoord2i(0, 0); glVertex2i(0, 0);
+		//}
+		//else {
+			glTexCoord2i(0, 1); glVertex2i(0, surface.Height());
+			glTexCoord2i(1, 1); glVertex2i(surface.Width(), surface.Height());
+			glTexCoord2i(1, 0); glVertex2i(surface.Width(), 0);
+			glTexCoord2i(0, 0); glVertex2i(0, 0);
+		//}
 		glEnd();
 	}
 
-	void Engine::Render(Texture texture, float x, float y, float rotation) {
+	void Engine::Render(Texture texture, float x, float y, float rotation, bool remove) {
 		glm::mat4 transformation;
 		transformation = glm::translate(transformation, glm::vec3(x, y, 0.0f));
 		if (rotation) {
 			transformation = glm::rotate(transformation, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
 		}
-		Render(texture, transformation);
+		Render(texture, transformation, remove);
 	}
 
 	Glyph& FindGlyph(char c) {
@@ -259,6 +272,10 @@ namespace King {
 		return WindowHeight;
 	}
 
+	void Engine::initializeGrid() const {
+		mPimpl->mGameGrid->initialize();
+	}
+
 	void Engine::fillScene() {
 		Render(King::Engine::TEXTURE_BACKGROUND, 0.0f, 0.0f);
 		const float pos_x_ini = 330.0f;
@@ -266,12 +283,14 @@ namespace King {
 		// nested loop of 8 by 8 (low computing cost)
 		for (int row = 0; row < 8; ++row) {
 			for (int column = 0; column < 8; ++column) {
+				bool remove = false;
+				if (column == 0) {
+					remove = true;
+				}
 				Render(mPimpl->mGameGrid->getStoneColors()[row][column], pos_x_ini + mPimpl->mGameGrid->getStonePositions()[row][column].first, 
-					                                pos_y_ini + mPimpl->mGameGrid->getStonePositions()[row][column].second);
+					                                pos_y_ini + mPimpl->mGameGrid->getStonePositions()[row][column].second, 0.0f, remove);
 			}
 		}
-
-		
 
 		// FIXME: rotate text, make seconds larger and counting
 		Write("Time Left", 50.0f, 390.0f);
@@ -329,7 +348,7 @@ namespace King {
 			mLastFrameSeconds = lastFrameTicks * 0.001f;
 
 			// not updating all the time
-			if (mUpdater && mLastFrameSeconds > 0.01) {
+			if (mUpdater) { //&& mLastFrameSeconds > 0.01) {
 				mUpdater->Update();
 			}
 		}
@@ -369,12 +388,20 @@ namespace King {
 		int column = 0, row = 0;
 		// make it random at some point
 		// nested loop for small grid 8x8
+		std::srand(time(0));
 		float posX = pos_x_ini, posY = pos_y_ini;
 		for (int row = 0; row < 8; ++row) {
 			for (int column = 0; column < 8; ++column) {
 				mPositions[row][column].first = posX + column * pos_increment;
 				mPositions[row][column].second = posY + row * pos_increment;
-				mColors[row][column] = (King::Engine::Texture)(rand() % 5 + 1);
+				
+				King::Engine::Texture color;
+				do {
+					color = (King::Engine::Texture)(rand() % 5 + 1);
+				} while ((row >= 2 && mColors[row - 1][column] == color && mColors[row - 2][column] == color)
+					|| (column >= 2 && mColors[row][column - 1] == color && mColors[row][column - 2] == color));
+
+				mColors[row][column] = color;
 			}
 		}
 	}

@@ -30,13 +30,14 @@ namespace King {
 		bool GetMouseButtonUp() const;
 		void SetMouseButtonUp(const bool state);
 		
+		void initGame();
 		void Start(Updater& updater);
 		void Quit();
 
 		int GetTextureHeight(Texture texture) const;
 		int GetTextureWidth(Texture texture) const;
-		void Render(Texture texture, const glm::mat4& transform);
-		void Render(Texture texture, float x, float y, float rotation = 0.0f);
+		void Render(Texture texture, const glm::mat4& transform, bool remove = false);
+		void Render(Texture texture, float x, float y, float rotation = 0.0f, bool remove = false);
 
 
 		float CalculateStringWidth(const char* text) const;
@@ -44,6 +45,7 @@ namespace King {
 		void Write(const char* text, float x, float y, float rotation = 0.0f);
 
 		void fillScene();
+		void initializeGrid() const;
 
 		void setStonePosition(const int row, const int column, const float mouseX, const float mouseY);
 		const std::pair<float, float>(&getStonePositions() const)[8][8];

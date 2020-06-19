@@ -71,7 +71,7 @@ void MinerSpeedGame::mouseDownEvent() {
 			}
 			// check if swap is possible
 			std::cout << "[DEBUG] END row/column :" << row << " - " << column << std::endl;
-			if (row >-1 && column > -1 && mColumn > -1 && mRow > -1) {
+			if (row >-1 && column>-1 && mColumn > -1 && mRow > -1) {
 				//verifySwap(row, column);
 				swap(row, column);
 			}
@@ -90,33 +90,6 @@ void MinerSpeedGame::mouseUpEvent() {
 	}
 }
 
-void MinerSpeedGame::swap(const int row, const int column) {
-	// only allow row and column-wise moves
-	if (row >= 0 && abs(mRow - row) == 1) {
-		// if condition to do swap (3+ stones same color) then do swap
-		mEngine.swapStoneColor(mRow, mColumn, 0, row - mRow);
-		std::vector<std::vector<position>*> *combinations = scan();
-		if (combinations->empty()) {
-			// revert swap
-			mEngine.swapStoneColor(mRow, mColumn, 0, row - mRow);
-		}
-		// just allow one swap
-		mEngine.SetMouseButtonDown(false);
-	}
-	else if (column >= 0 && abs(mColumn - column) == 1) {
-		// if condition to do swap (3+ stones same color) then do swap
-		mEngine.swapStoneColor(mRow, mColumn, column - mColumn, 0);
-		std::vector<std::vector<position>*> *combinations = scan();
-		if (combinations->empty()) {
-			// revert swap
-			mEngine.swapStoneColor(mRow, mColumn, column - mColumn, 0);
-		}
-		// just allow one swap
-		mEngine.SetMouseButtonDown(false);
-	}
-}
-
-// FIXME: created swap function to do a general one, this one works locally
 void MinerSpeedGame::verifySwap(const int row, const int column) {
 	// only allow row and column-wise moves
 	if (row >= 0 && abs(mRow - row) == 1) {
@@ -182,6 +155,42 @@ std::vector<position>* MinerSpeedGame::scanPosition(const int row, const int col
 			}
 			return results;
 		}
+	}
+}
+
+void MinerSpeedGame::swap(const int row, const int column) {
+	// only allow row and column-wise moves
+	if (row >= 0 && abs(mRow - row) == 1) {
+		// if condition to do swap (3+ stones same color) then do swap
+		mEngine.swapStoneColor(mRow, mColumn, 0, row - mRow);
+		//bool allowed = verifyStoneCombinations(row, column);
+		std::vector<std::vector<position>*> *combinations = scan();
+		if (combinations->empty()) {
+			// revert swap
+			mEngine.swapStoneColor(mRow, mColumn, 0, row - mRow);
+		}
+		//if (!allowed) {
+		//	// revert swap
+		//	mEngine.swapStoneColor(mRow, mColumn, 0, row - mRow);
+		//}
+		// just allow one swap
+		mEngine.SetMouseButtonDown(false);
+	}
+	else if (column >= 0 && abs(mColumn - column) == 1) {
+		// if condition to do swap (3+ stones same color) then do swap
+		mEngine.swapStoneColor(mRow, mColumn, column - mColumn, 0);
+		std::vector<std::vector<position>*> *combinations = scan();
+		if (combinations->empty()) {
+			// revert swap
+			mEngine.swapStoneColor(mRow, mColumn, column - mColumn, 0);
+		}
+		//bool allowed = verifyStoneCombinations(row, column);
+		//if (!allowed) {
+		//	// revert swap
+		//	mEngine.swapStoneColor(mRow, mColumn, column - mColumn, 0);
+		//}
+		// just allow one swap
+		mEngine.SetMouseButtonDown(false);
 	}
 }
 

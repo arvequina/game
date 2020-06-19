@@ -22,9 +22,9 @@ public:
 	void Update();
 
 private:
-	void VerifyMouseEvents();
-	void mouseDownEvent(const bool mouseDown);
-	void mouseUpEvent(const bool mouseUp);
+	void eventsController();
+	void mouseDownEvent();
+	void mouseUpEvent();
 	void verifySwap(const int row, const int column);
 	void swap(const int row, const int column);
 	std::vector<position>* scanPosition(const int row, const int column);
