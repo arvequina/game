@@ -1,6 +1,10 @@
-﻿  minerspeedgame.cpp
-c:\users\svra\documents\kinggame\game\src\minerspeedgame.cpp(51): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
-c:\users\svra\documents\kinggame\game\src\minerspeedgame.cpp(52): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
+﻿  Engine.cpp
+c:\users\svra\documents\kinggame\game\external\include\king\engine.cpp(421): warning C4244: 'argumento': conversión de 'time_t' a 'unsigned int'; posible pérdida de datos
+  main.cpp
+  minerspeedgame.cpp
+c:\users\svra\documents\kinggame\game\src\minerspeedgame.cpp(68): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
 c:\users\svra\documents\kinggame\game\src\minerspeedgame.cpp(69): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
-c:\users\svra\documents\kinggame\game\src\minerspeedgame.cpp(70): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
+c:\users\svra\documents\kinggame\game\src\minerspeedgame.cpp(86): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
+c:\users\svra\documents\kinggame\game\src\minerspeedgame.cpp(87): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
+  Generando código...
   Worktest.vcxproj -> C:\Users\svra\Documents\KingGame\game\bin\Worktest.exe

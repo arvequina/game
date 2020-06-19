@@ -18,6 +18,7 @@
 #include "Updater.h"
 
 #include "iostream"
+#include "string"
 #include "time.h"
 
 
@@ -82,6 +83,7 @@ namespace King {
 
 		void Start();
 		void ParseEvents();
+		float getCurrentTime() const;
 	};
 
 	Engine::Engine(const char* assetsDirectory)
@@ -283,7 +285,11 @@ namespace King {
 		mPimpl->mGameGrid->initialize();
 	}
 
-	void Engine::fillScene() {
+	float Engine::getCurrentTime() const {
+		return static_cast<float>(SDL_GetTicks());
+	}
+
+	void Engine::fillScene(float timeLeft) {
 		Render(King::Engine::TEXTURE_BACKGROUND, 0.0f, 0.0f);
 		const float pos_x_ini = 330.0f;
 		const float pos_y_ini = 100.0f;
@@ -296,8 +302,19 @@ namespace King {
 		}
 
 		// FIXME: rotate text, make seconds larger and counting
+		int timeLeftInt = static_cast<int>(timeLeft);
 		Write("Time Left", 50.0f, 390.0f);
-		Write("60", 100.0f, 420.0f);
+		Write(std::to_string(timeLeftInt).c_str(), 100.0f, 420.0f);
+	}
+
+	void Engine::gameOverScene() {
+		float initialTime = getCurrentTime();
+		//Write("Game Over", 50.0f, 390.0f);
+		while ((getCurrentTime() - initialTime)*0.001f < 3.0f) {
+			//wait 3 seconds
+		}
+		// bye bye
+		Quit();
 	}
 
 	void Engine::setStonePosition(const int row, const int column, const float mouseX, const float mouseY) {
@@ -355,6 +372,10 @@ namespace King {
 				mUpdater->Update();
 			}
 		}
+	}
+
+	float Engine::EngineImplementation::getCurrentTime() const {
+		return mElapsedTicks;
 	}
 
 	void Engine::EngineImplementation::ParseEvents() {

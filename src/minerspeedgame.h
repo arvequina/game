@@ -30,12 +30,16 @@ private:
 	std::vector<position>* scanPosition(const int row, const int column);
 	std::vector<std::vector<position>*> * scan();
 	bool verifyStoneCombinations(const int row, const int column);
+	void initializeTimer();
+	bool checkTimeOver();
 	King::Engine mEngine;
 	float mRotation;
 	float mPosBeginX;
 	float mPosBeginY;
 	float mPosEndX;
 	float mPosEndY;
+	float mStartTime;
+	float mTimeLeft;
 	bool mFirst;
 	int mColumn;
 	int mRow;

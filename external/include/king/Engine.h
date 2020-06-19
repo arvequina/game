@@ -45,8 +45,10 @@ namespace King {
 		void Write(const char* text, const glm::mat4& transform);
 		void Write(const char* text, float x, float y, float rotation = 0.0f);
 
-		void fillScene();
+		void fillScene(float timeLeft);
+		void gameOverScene();
 		void initializeGrid() const;
+		float getCurrentTime() const;
 
 		void setStonePosition(const int row, const int column, const float mouseX, const float mouseY);
 		const std::pair<float, float>(&getStonePositions() const)[8][8];

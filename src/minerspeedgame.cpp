@@ -15,11 +15,28 @@ MinerSpeedGame::MinerSpeedGame()
 void MinerSpeedGame::Start() {
 	//mEngine->initContollers();
 	mEngine.initGame();
+	initializeTimer();
 	mEngine.Start(*this);
 }
 
+void MinerSpeedGame::initializeTimer() {
+	mStartTime = mEngine.getCurrentTime();
+}
+
+bool MinerSpeedGame::checkTimeOver() {
+	mTimeLeft =  10.0f - (mEngine.getCurrentTime() - mStartTime)* 0.001f;
+	if (mTimeLeft < 0.0f) {
+		return true;
+	}
+	return false;
+}
+
 void MinerSpeedGame::Update() {
-	mEngine.fillScene();
+	if (checkTimeOver()) {
+		//end game
+		mEngine.gameOverScene();
+	}
+	mEngine.fillScene(mTimeLeft);
 	// check mouse events
 	eventsController();
 	//// reset visited map
@@ -112,7 +129,7 @@ void MinerSpeedGame::swap(const int row, const int column) {
 				}
 			}
 			// reorganize and fill empty slots
-			mEngine.fillScene(); // tmp function
+			mEngine.fillScene(mTimeLeft); // tmp function
 			// once full grid call scan again to check combinations
             // ...
 		}
@@ -138,7 +155,7 @@ void MinerSpeedGame::swap(const int row, const int column) {
 				}
 			}
 			// reorganize and fill empty slots
-			mEngine.fillScene(); // tmp function
+			mEngine.fillScene(mTimeLeft); // tmp function
 			// once full grid call scan again to check combinations
 			// ...
 		}
