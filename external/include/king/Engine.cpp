@@ -177,23 +177,30 @@ namespace King {
 	void Engine::Render(Engine::Texture texture, const glm::mat4& transform, bool remove) {
 		glLoadMatrixf(reinterpret_cast<const float*>(&transform));
 
-		SdlSurface& surface = *mPimpl->mSdlSurfaceContainer[texture];
+		if (texture == Engine::Texture::TEXTURE_EMPTY) {
+			SdlSurface& surface = *mPimpl->mSdlSurfaceContainer[Engine::Texture::TEXTURE_YELLOW];
 
-		surface.Bind();
+			surface.Bind();
 
-		glBegin(GL_QUADS);
-		//if (remove) {
-		//	glTexCoord2i(0, 1); glVertex2i(0, 0);
-		//	glTexCoord2i(1, 1); glVertex2i(0, 0);
-		//	glTexCoord2i(1, 0); glVertex2i(0, 0);
-		//	glTexCoord2i(0, 0); glVertex2i(0, 0);
-		//}
-		//else {
+			glBegin(GL_QUADS);
+
+			glTexCoord2i(0, 1); glVertex2i(0, 0);
+			glTexCoord2i(1, 1); glVertex2i(0, 0);
+			glTexCoord2i(1, 0); glVertex2i(0, 0);
+			glTexCoord2i(0, 0); glVertex2i(0, 0);
+		}
+		else {
+			SdlSurface& surface = *mPimpl->mSdlSurfaceContainer[texture];
+
+			surface.Bind();
+
+			glBegin(GL_QUADS);
+
 			glTexCoord2i(0, 1); glVertex2i(0, surface.Height());
 			glTexCoord2i(1, 1); glVertex2i(surface.Width(), surface.Height());
 			glTexCoord2i(1, 0); glVertex2i(surface.Width(), 0);
 			glTexCoord2i(0, 0); glVertex2i(0, 0);
-		//}
+		}
 		glEnd();
 	}
 
@@ -283,12 +290,8 @@ namespace King {
 		// nested loop of 8 by 8 (low computing cost)
 		for (int row = 0; row < 8; ++row) {
 			for (int column = 0; column < 8; ++column) {
-				bool remove = false;
-				if (column == 0) {
-					remove = true;
-				}
 				Render(mPimpl->mGameGrid->getStoneColors()[row][column], pos_x_ini + mPimpl->mGameGrid->getStonePositions()[row][column].first, 
-					                                pos_y_ini + mPimpl->mGameGrid->getStonePositions()[row][column].second, 0.0f, remove);
+					                                pos_y_ini + mPimpl->mGameGrid->getStonePositions()[row][column].second);
 			}
 		}
 

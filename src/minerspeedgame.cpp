@@ -22,8 +22,8 @@ void MinerSpeedGame::Update() {
 	mEngine.fillScene();
 	// check mouse events
 	eventsController();
-	// reset visited map
-	mEngine.resetStoneVisited();
+	//// reset visited map
+	//mEngine.resetStoneVisited();
 }
 
 void MinerSpeedGame::eventsController() {
@@ -92,13 +92,29 @@ void MinerSpeedGame::mouseUpEvent() {
 
 void MinerSpeedGame::swap(const int row, const int column) {
 	// only allow row and column-wise moves
+	std::vector<std::vector<position>*> *combinations = new std::vector<std::vector<position>*>();
 	if (row >= 0 && abs(mRow - row) == 1) {
 		// if condition to do swap (3+ stones same color) then do swap
 		mEngine.swapStoneColor(mRow, mColumn, 0, row - mRow);
-		std::vector<std::vector<position>*> *combinations = scan();
+		combinations = scan();
 		if (combinations->empty()) {
 			// revert swap
 			mEngine.swapStoneColor(mRow, mColumn, 0, row - mRow);
+		}
+		else {
+			// remove stones and collapse
+			while (!combinations->empty()) {
+				std::vector<position>* combination = combinations->back();
+				combinations->pop_back();
+				for (std::vector<position>::iterator it = combination->begin(); it != combination->end(); ++it) {
+					std::cout << "[DEBUG] iterator : " << it->first << std::endl;
+					mEngine.setStoneColor(it->first, it->second, King::Engine::Texture::TEXTURE_EMPTY);
+				}
+			}
+			// reorganize and fill empty slots
+			mEngine.fillScene(); // tmp function
+			// once full grid call scan again to check combinations
+            // ...
 		}
 		// just allow one swap
 		mEngine.SetMouseButtonDown(false);
@@ -110,6 +126,21 @@ void MinerSpeedGame::swap(const int row, const int column) {
 		if (combinations->empty()) {
 			// revert swap
 			mEngine.swapStoneColor(mRow, mColumn, column - mColumn, 0);
+		}
+		else {
+			// remove stones and collapse
+			while (!combinations->empty()) {
+				std::vector<position>* combination = combinations->back();
+				combinations->pop_back();
+				for (std::vector<position>::iterator it = combination->begin(); it != combination->end(); ++it) {
+					std::cout << "[DEBUG] iterator : " << it->first << std::endl;
+					mEngine.setStoneColor(it->first, it->second, King::Engine::Texture::TEXTURE_EMPTY);
+				}
+			}
+			// reorganize and fill empty slots
+			mEngine.fillScene(); // tmp function
+			// once full grid call scan again to check combinations
+			// ...
 		}
 		// just allow one swap
 		mEngine.SetMouseButtonDown(false);
@@ -146,6 +177,8 @@ void MinerSpeedGame::verifySwap(const int row, const int column) {
 std::vector<std::vector<position>*> *MinerSpeedGame::scan() {
 	std::vector<position> *stones = new std::vector<position>();
 	std::vector<std::vector<position>*> *combinations = new std::vector<std::vector<position>*>();
+	// reset visited map
+	mEngine.resetStoneVisited();
 	for (int y = 0; y < 8; ++y) {
 		for (int x = 0; x < 8; ++x) {
 			stones = scanPosition(y, x);
@@ -167,22 +200,17 @@ std::vector<position>* MinerSpeedGame::scanPosition(const int row, const int col
 	results->push_back(position(row, column));
 	std::list<position> nextPositions = { position(row, column + 1), position(row + 1, column) , position(row, column - 1) , position(row - 1, column) };
 	for (auto nextPos : nextPositions) {
-		if (nextPos.first == -1 || nextPos.second == -1 || nextPos.first == 8 || nextPos.second == 8) {
-			break;
-		}
 		int x = std::max(0, std::min(nextPos.second, 7));
 		int y = std::max(0, std::min(nextPos.first, 7));
 		if (mEngine.getStoneColors()[y][x] == mEngine.getStoneColors()[row][column]) {
 			//results->push_back(scan(y, x));
 			std::vector<position> * res = scanPosition(y, x);
-			if (!res->empty()) {
-				for (std::vector<position>::iterator it = res->begin(); it != res->end(); ++it) {
-					results->push_back((*it));
-				}
+			for (std::vector<position>::iterator it = res->begin(); it != res->end(); ++it) {
+				results->push_back((*it));
 			}
-			return results;
 		}
 	}
+	return results;
 }
 
 bool MinerSpeedGame::verifyStoneCombinations(const int row, const int column) {
