@@ -72,8 +72,7 @@ namespace King {
 			, mQuit(false)
 			, mUpdater(nullptr)
 			, mElapsedTicks(static_cast<float>(SDL_GetTicks()))
-		{
-		}
+		{}
 
 		void Start();
 		void ParseEvents();
@@ -278,8 +277,6 @@ namespace King {
 					                                pos_y_ini + mPimpl->mGameGrid->getStonePositions()[row][column].second);
 			}
 		}
-
-		// FIXME: rotate text, make seconds larger and counting
 		int timeLeftInt = static_cast<int>(timeLeft);
 		Write("Time Left", 50.0f, 390.0f);
 		Write(std::to_string(timeLeftInt).c_str(), 100.0f, 420.0f);
@@ -287,11 +284,9 @@ namespace King {
 
 	void Engine::gameOverScene() {
 		float initialTime = getCurrentTime();
-		//Write("Game Over", 50.0f, 390.0f);
-		while ((getCurrentTime() - initialTime)*0.001f < 3.0f) {
-			//wait 3 seconds
-		}
-		// bye bye
+		//wait 3 seconds
+		while ((getCurrentTime() - initialTime)*0.001f < 3.0f) {}
+		// bye!
 		Quit();
 	}
 
@@ -370,44 +365,34 @@ namespace King {
 	}
 
 	void Engine::GameGrid::initialize() {
-		const float pos_x_ini = 0.0f;
-		const float pos_y_ini = 0.0f;
-		//const float pos_x_end = 345.0f;
-		//const float pos_y_end = 345.0f;
 		const float pos_increment = STONE_SIZE;
 		int column = 0, row = 0;
-		// make it random at some point
-		// nested loop for small grid 8x8
+		float posX = 0.0f, posY = 0.0f;
 		std::srand(time(0));
-		float posX = pos_x_ini, posY = pos_y_ini;
+		// nested loop for small grid 8x8
 		for (int row = 0; row < GAME_GRID_SIZE; ++row) {
 			for (int column = 0; column < GAME_GRID_SIZE; ++column) {
 				mPositions[row][column].first = posX + column * pos_increment;
 				mPositions[row][column].second = posY + row * pos_increment;
-				
-				King::Engine::Texture color;
-				do {
+				King::Engine::Texture color = getRandomStoneColor();
+			    while ((row >= 2 && mColors[row - 1][column] == color && mColors[row - 2][column] == color) ||
+					   (column >= 2 && mColors[row][column - 1] == color && mColors[row][column - 2] == color)) {
 					color = getRandomStoneColor();
-				} while ((row >= 2 && mColors[row - 1][column] == color && mColors[row - 2][column] == color)
-					|| (column >= 2 && mColors[row][column - 1] == color && mColors[row][column - 2] == color));
-
+				}
 				mColors[row][column] = color;
 			}
 		}
 	}
 
-	void Engine::GameGrid::setStonePosition(const int row, const int column, const float mouseX, const float mouseY)
-	{
+	void Engine::GameGrid::setStonePosition(const int row, const int column, const float mouseX, const float mouseY) {
 		mPositions[row][column] = std::pair<float, float>(mouseX, mouseY);
 	}
 
-	const std::pair<float, float>(&Engine::GameGrid::getStonePositions() const)[8][8]
-	{
+	const std::pair<float, float>(&Engine::GameGrid::getStonePositions() const)[8][8] {
 		return mPositions;
 	}
 
-	void Engine::GameGrid::swapStoneColor(const int row, const int column, const int directionX, const int directionY)
-	{
+	void Engine::GameGrid::swapStoneColor(const int row, const int column, const int directionX, const int directionY) {
 		// check for writting/reading out of bounds
 		if ((row + directionY >= 0 && column + directionX >= 0) &&
 			(row + directionY < GAME_GRID_SIZE && column + directionX < GAME_GRID_SIZE)) {
@@ -415,16 +400,14 @@ namespace King {
 		}
 	}
 	
-	void Engine::GameGrid::setStoneColor(const int row, const int column, King::Engine::Texture color)
-	{
+	void Engine::GameGrid::setStoneColor(const int row, const int column, King::Engine::Texture color) {
 		// check for writting out of bounds
 		if (row >= 0 && row < GAME_GRID_SIZE && column >= 0 && column < GAME_GRID_SIZE) {
 			mColors[row][column] = color;
 		}
 	}
 
-	const King::Engine::Texture(&Engine::GameGrid::getStoneColors() const)[GAME_GRID_SIZE][GAME_GRID_SIZE]
-	{
+	const King::Engine::Texture(&Engine::GameGrid::getStoneColors() const)[GAME_GRID_SIZE][GAME_GRID_SIZE] {
 		return mColors;
 	}
 }
