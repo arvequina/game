@@ -37,8 +37,8 @@ namespace King {
 
 		int GetTextureHeight(Texture texture) const;
 		int GetTextureWidth(Texture texture) const;
-		void Render(Texture texture, const glm::mat4& transform);
-		void Render(Texture texture, float x, float y, float rotation = 0.0f);
+		void Render(Texture texture, const glm::mat4& transform, bool remove = false);
+		void Render(Texture texture, float x, float y, float rotation = 0.0f, bool remove = false);
 
 
 		float CalculateStringWidth(const char* text) const;

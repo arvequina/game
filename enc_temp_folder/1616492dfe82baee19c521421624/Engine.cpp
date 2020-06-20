@@ -178,25 +178,43 @@ namespace King {
 		return mPimpl->mSdlSurfaceContainer[texture]->Width();
 	}
 
-	void Engine::Render(Engine::Texture texture, const glm::mat4& transform) {
+	void Engine::Render(Engine::Texture texture, const glm::mat4& transform, bool remove) {
 		glLoadMatrixf(reinterpret_cast<const float*>(&transform));
-		SdlSurface& surface = *mPimpl->mSdlSurfaceContainer[texture];
-		surface.Bind();
-		glBegin(GL_QUADS);
-		glTexCoord2i(0, 1); glVertex2i(0, surface.Height());
-		glTexCoord2i(1, 1); glVertex2i(surface.Width(), surface.Height());
-		glTexCoord2i(1, 0); glVertex2i(surface.Width(), 0);
-		glTexCoord2i(0, 0); glVertex2i(0, 0);
+
+		//if (texture == Engine::Texture::TEXTURE_EMPTY) {
+		//	SdlSurface& surface = *mPimpl->mSdlSurfaceContainer[Engine::Texture::TEXTURE_YELLOW];
+		//
+		//	surface.Bind();
+		//
+		//	glBegin(GL_QUADS);
+		//
+		//	glTexCoord2i(0, 1); glVertex2i(0, 0);
+		//	glTexCoord2i(1, 1); glVertex2i(0, 0);
+		//	glTexCoord2i(1, 0); glVertex2i(0, 0);
+		//	glTexCoord2i(0, 0); glVertex2i(0, 0);
+		//}
+		//else {
+			SdlSurface& surface = *mPimpl->mSdlSurfaceContainer[texture];
+
+			surface.Bind();
+
+			glBegin(GL_QUADS);
+
+			glTexCoord2i(0, 1); glVertex2i(0, surface.Height());
+			glTexCoord2i(1, 1); glVertex2i(surface.Width(), surface.Height());
+			glTexCoord2i(1, 0); glVertex2i(surface.Width(), 0);
+			glTexCoord2i(0, 0); glVertex2i(0, 0);
+		//}
 		glEnd();
 	}
 
-	void Engine::Render(Texture texture, float x, float y, float rotation) {
+	void Engine::Render(Texture texture, float x, float y, float rotation, bool remove) {
 		glm::mat4 transformation;
 		transformation = glm::translate(transformation, glm::vec3(x, y, 0.0f));
 		if (rotation) {
 			transformation = glm::rotate(transformation, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
 		}
-		Render(texture, transformation);
+		Render(texture, transformation, remove);
 	}
 
 	Glyph& FindGlyph(char c) {
