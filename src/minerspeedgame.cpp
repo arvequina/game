@@ -312,7 +312,8 @@ bool MinerSpeedGame::fixEmptyStone(const int row, const int column) {
 
 	// nothing above so generate a new one
 	if (row == 0) {
-		mEngine.setStoneColor(row, column, King::Engine::Texture::TEXTURE_EMPTY/*(King::Engine::Texture)(rand() % 5 + 1)*/);
+		//mEngine.setStoneColor(row, column, King::Engine::Texture::TEXTURE_EMPTY/*(King::Engine::Texture)(rand() % 5 + 1)*/);
+		mEngine.setStoneColor(row, column, (King::Engine::Texture)(rand() % 5 + 1));
 		return false;
 	}
 
@@ -335,7 +336,8 @@ bool MinerSpeedGame::fixEmptyStone(const int row, const int column) {
 		}
 	}
 	if (found == false) {
-		mEngine.setStoneColor(row, column, King::Engine::Texture::TEXTURE_EMPTY/*(King::Engine::Texture)(rand() % 5 + 1)*/);
+		//mEngine.setStoneColor(row, column, King::Engine::Texture::TEXTURE_EMPTY/*(King::Engine::Texture)(rand() % 5 + 1)*/);
+		mEngine.setStoneColor(row, column, (King::Engine::Texture)(rand() % 5 + 1));
 	}
 	fixEmptyStone(row - 1, column);
 	return false;
