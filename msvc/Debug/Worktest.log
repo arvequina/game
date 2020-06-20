@@ -1,3 +1,0 @@
-﻿  Engine.cpp
-c:\users\svra\documents\kinggame\game\external\include\king\engine.cpp(417): warning C4244: 'argumento': conversión de 'time_t' a 'unsigned int'; posible pérdida de datos
-  Worktest.vcxproj -> C:\Users\svra\Documents\KingGame\game\bin\Worktest.exe
