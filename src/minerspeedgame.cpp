@@ -36,6 +36,7 @@ void MinerSpeedGame::Update() {
 		//end game
 		mEngine.gameOverScene();
 	}
+	// fill scene with all elements
 	mEngine.fillScene(mTimeLeft);
 	// check mouse events
 	eventsController();
@@ -168,9 +169,7 @@ std::vector<position> MinerSpeedGame::destroyStones(const int row, const int col
 	resultRow.reserve(12);
 
 	King::Engine::Texture currentColor = mEngine.getStoneColors()[row][column];
-
 	// check left in the same column and keep the row
-
 	for (int leftX = column - 1; leftX >= 0; leftX--) {
 		if(currentColor == mEngine.getStoneColors()[row][leftX]){
 			resultColumn.push_back(position(row, leftX));
@@ -241,6 +240,7 @@ std::vector<position> MinerSpeedGame::destroyStones(const int row, const int col
 }
 
 void MinerSpeedGame::fillDestroyedStones(const std::vector<position> &vect) {
+	// FIXME: not working properly, weird stone adding
 	// first empty every all destroyed stones
 	// FIXME: try to add animation somewhere
 	//bool animation = false;
@@ -254,6 +254,7 @@ void MinerSpeedGame::fillDestroyedStones(const std::vector<position> &vect) {
 }
 
 bool MinerSpeedGame::fixEmptyStone(const int row, const int column) {
+	// FIXME: not working properly, weird stone adding
 	// nothing above so generate a new one
 	if (row == 0) {
 		// FIXME: animation here???
@@ -267,7 +268,6 @@ bool MinerSpeedGame::fixEmptyStone(const int row, const int column) {
 		fixEmptyStone(row - 1, column);
 		return false; 
 	}
-
 
 	// try to find the above stone that is not empty
 	bool found = false;
@@ -287,55 +287,6 @@ bool MinerSpeedGame::fixEmptyStone(const int row, const int column) {
 	}
 	fixEmptyStone(row - 1, column);
 	return false;
-}
-
-bool MinerSpeedGame::verifyStoneCombinations(const int row, const int column) {
-	bool combinationAllowed = false;
-	auto stoneColors = mEngine.getStoneColors();
-	King::Engine::Texture currentStoneColor = stoneColors[row][column];
-	King::Engine::Texture nextStoneColor = stoneColors[mRow][mColumn];
-	// CURRENT stone
-	
-	// ROW
-	int xPosLeft = column, xPosRight = column; 
-	//bool leftEnd = false, rightEnd = false;
-	while (stoneColors[row][--xPosLeft] == currentStoneColor) {}
-	while (stoneColors[row][++xPosRight] == currentStoneColor) {}
-	int rowOfStones = abs(xPosRight - xPosLeft) - 1;
-	
-	// COLUMN
-	int yPosUp = row, yPosDown = row;
-	while (stoneColors[--yPosUp][column] == currentStoneColor) {}
-	while (stoneColors[++yPosDown][column] == currentStoneColor) {}
-	int columnOfStones = abs(yPosDown - yPosUp) - 1;
-
-	if (rowOfStones >= 3) {
-		combinationAllowed = true;
-		int currentRow = row, currentColumn = xPosLeft + 1;
-		while (currentRow > 0) {
-			for (currentColumn = xPosLeft + 1; currentColumn < xPosRight; ++currentColumn) {
-				mEngine.swapStoneColor(currentRow, currentColumn, 0, -1);
-			}
-			--currentRow;
-		}
-		// create new stones
-		for (currentColumn = xPosLeft + 1; currentColumn < xPosRight; ++currentColumn) {
-			mEngine.setStoneColor(currentRow, currentColumn, King::Engine::getRandomStone());
-		}
-	}
-	else if (columnOfStones >= 3) {
-		combinationAllowed = true;
-		int currentRow = yPosDown - 1, currentColumn = column;
-		while (currentRow > (yPosDown - 1 - columnOfStones)) {
-			mEngine.swapStoneColor(currentRow, currentColumn, 0, -columnOfStones);
-			--currentRow;
-		}
-		// create new stones
-		for (; currentRow >= 0; --currentRow) {
-			mEngine.setStoneColor(currentRow, currentColumn, King::Engine::getRandomStone());
-		}
-	}
-	return combinationAllowed;
 }
 
 // FIXME: rotation just in case

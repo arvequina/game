@@ -28,7 +28,6 @@ private:
 	void swap(const int row, const int column);
 	void fillDestroyedStones(const std::vector<position>& vect);
 	bool fixEmptyStone(const int row, const int column);
-	bool verifyStoneCombinations(const int row, const int column);
 	void initializeTimer();
 	bool checkTimeOver();
 	King::Engine mEngine;
