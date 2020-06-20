@@ -39,8 +39,6 @@ void MinerSpeedGame::Update() {
 	mEngine.fillScene(mTimeLeft);
 	// check mouse events
 	eventsController();
-	//// reset visited map
-	//mEngine.resetStoneVisited();
 }
 
 void MinerSpeedGame::eventsController() {
@@ -165,9 +163,9 @@ void MinerSpeedGame::swap(const int row, const int column) {
 	}
 }
 
-std::vector<std::pair<int,int>> MinerSpeedGame::destroyStones(const int row, const int column) {
+std::vector<position> MinerSpeedGame::destroyStones(const int row, const int column) {
 
-	std::vector<std::pair<int, int>> resultColumn, resultRow;
+	std::vector<position> resultColumn, resultRow;
 	resultColumn.reserve(12);//max we destroy entire row(8) and half column(4) or the opposite, for a totale of 12
 	resultRow.reserve(12);
 
@@ -177,7 +175,7 @@ std::vector<std::pair<int,int>> MinerSpeedGame::destroyStones(const int row, con
 
 	for (int leftX = column - 1; leftX >= 0; leftX--) {
 		if(currentColor == mEngine.getStoneColors()[row][leftX]){
-			resultColumn.push_back(std::pair<int, int>(row, leftX));
+			resultColumn.push_back(position(row, leftX));
 		}
 		else {
 			break;
@@ -187,7 +185,7 @@ std::vector<std::pair<int,int>> MinerSpeedGame::destroyStones(const int row, con
 	// check right in the same column and keep the row
 	for (int rightX = column + 1; rightX < 8; rightX++) {
 		if (currentColor == mEngine.getStoneColors()[row][rightX]) {
-			resultColumn.push_back(std::pair<int, int>(row, rightX));
+			resultColumn.push_back(position(row, rightX));
 		}
 		else {
 			break;
@@ -201,7 +199,7 @@ std::vector<std::pair<int,int>> MinerSpeedGame::destroyStones(const int row, con
 	// check down in the same row and keep the column
 	for (int rowY = row + 1; rowY < 8; rowY++) {
 		if (currentColor == mEngine.getStoneColors()[rowY][column]) {
-			resultRow.push_back(std::pair<int, int>(rowY, column));
+			resultRow.push_back(position(rowY, column));
 		}
 		else {
 			break;
@@ -211,7 +209,7 @@ std::vector<std::pair<int,int>> MinerSpeedGame::destroyStones(const int row, con
 	// check up in the same row and keep the column
 	for (int rowY = row - 1; rowY >= 0; rowY--) {
 		if (currentColor == mEngine.getStoneColors()[rowY][column]) {
-			resultRow.push_back(std::pair<int, int>(rowY, column));
+			resultRow.push_back(position(rowY, column));
 		}
 		else {
 			break;
@@ -223,51 +221,34 @@ std::vector<std::pair<int,int>> MinerSpeedGame::destroyStones(const int row, con
 	}
 
 	if (resultRow.size() == 0 && resultColumn.size() == 0) { // nothing happens in either cases
-		return std::vector<std::pair<int, int>>();
+		return std::vector<position>();
 	}
 
 	if (resultRow.size() == 0) {
-		resultColumn.push_back(std::pair<int, int>(row, column));
+		resultColumn.push_back(position(row, column));
 		return resultColumn;
 	}
 
 	if (resultColumn.size() == 0) {
-		resultRow.push_back(std::pair<int, int>(row, column));
+		resultRow.push_back(position(row, column));
 		return resultRow;
 	}
 
 	// we get both row and column match
-
-	std::vector<std::pair<int, int>> resultBoth;
-	resultBoth.push_back(std::pair<int, int>(row,column));
+	std::vector<position> resultBoth;
+	resultBoth.push_back(position(row,column));
 	resultBoth.insert(resultBoth.end(), resultRow.begin(), resultRow.end());
 	resultBoth.insert(resultBoth.end(), resultColumn.begin(), resultColumn.end());
 	return resultBoth;
 }
 
-std::vector<std::vector<position>*> *MinerSpeedGame::scan() {
-	std::vector<position> *stones = new std::vector<position>();
-	std::vector<std::vector<position>*> *combinations = new std::vector<std::vector<position>*>();
-	// reset visited map
-	mEngine.resetStoneVisited();
-	for (int y = 0; y < 8; ++y) {
-		for (int x = 0; x < 8; ++x) {
-			stones = scanPosition(y, x);
-			if (stones->size() >= 3) {
-				// add to groups
-				combinations->push_back(stones);
-			}
-		}
-	}
-	return combinations;
-}
-
-void MinerSpeedGame::fillDestroyedStones(const std::vector<std::pair<int,int>> &vect) {
+void MinerSpeedGame::fillDestroyedStones(const std::vector<position> &vect) {
 	// first empty every all destroyed stones
+	// FIXME: try to add animation somewhere
+	//bool animation = false;
 	for (auto nextPos : vect) {
 		mEngine.setStoneColor(nextPos.first, nextPos.second, King::Engine::Texture::TEXTURE_EMPTY);
 	}
-
 	for (auto nextPos : vect) {
 		// (King::Engine::Texture)(rand() % 5 + 1)
 		fixEmptyStone(nextPos.first, nextPos.second);
@@ -277,6 +258,7 @@ void MinerSpeedGame::fillDestroyedStones(const std::vector<std::pair<int,int>> &
 bool MinerSpeedGame::fixEmptyStone(const int row, const int column) {
 	// nothing above so generate a new one
 	if (row == 0) {
+		// FIXME: animation here???
 		//mEngine.setStoneColor(row, column, King::Engine::Texture::TEXTURE_EMPTY/*(King::Engine::Texture)(rand() % 5 + 1)*/);
 		mEngine.setStoneColor(row, column, (King::Engine::Texture)(rand() % 5 + 1));
 		return false;
@@ -301,33 +283,12 @@ bool MinerSpeedGame::fixEmptyStone(const int row, const int column) {
 		}
 	}
 	if (found == false) {
+		// FIXME: animation here???
 		//mEngine.setStoneColor(row, column, King::Engine::Texture::TEXTURE_EMPTY/*(King::Engine::Texture)(rand() % 5 + 1)*/);
 		mEngine.setStoneColor(row, column, (King::Engine::Texture)(rand() % 5 + 1));
 	}
 	fixEmptyStone(row - 1, column);
 	return false;
-}
-
-std::vector<position>* MinerSpeedGame::scanPosition(const int row, const int column) {
-	if (mEngine.getStoneVisited()[row][column] == true) {
-		return new std::vector<position>();
-	}
-	mEngine.setStoneVisited(row, column, true);
-	std::vector<position> *results = new std::vector<position>();
-	results->push_back(position(row, column));
-	std::list<position> nextPositions = { position(row, column + 1), position(row + 1, column) , position(row, column - 1) , position(row - 1, column) };
-	for (auto nextPos : nextPositions) {
-		int x = std::max(0, std::min(nextPos.second, 7));
-		int y = std::max(0, std::min(nextPos.first, 7));
-		if (mEngine.getStoneColors()[y][x] == mEngine.getStoneColors()[row][column]) {
-			//results->push_back(scan(y, x));
-			std::vector<position> * res = scanPosition(y, x);
-			for (std::vector<position>::iterator it = res->begin(); it != res->end(); ++it) {
-				results->push_back((*it));
-			}
-		}
-	}
-	return results;
 }
 
 bool MinerSpeedGame::verifyStoneCombinations(const int row, const int column) {

@@ -9,6 +9,9 @@
 #include <glew/glew.h>
 #include <glm/glm.hpp>
 #include <sdl/Sdl.h>
+#include <iostream>
+#include <string>
+#include <time.h>
 
 #include "Font.h"
 #include "GlContext.h"
@@ -16,11 +19,6 @@
 #include "SdlWindow.h"
 #include "SdlSurface.h"
 #include "Updater.h"
-
-#include "iostream"
-#include "string"
-#include "time.h"
-
 
 namespace King {
 	static const int WindowWidth = 800;
@@ -37,11 +35,9 @@ namespace King {
 		void initialize();
 		const std::pair<float, float>(&getStonePositions() const)[8][8];
 		const King::Engine::Texture(&getStoneColors() const)[8][8];
-		const bool(&getStoneVisited() const)[8][8];
 		void setStonePosition(const int row, const int column, const float mouseX, const float mouseY);
 		void swapStoneColor(const int row, const int column, const int directionX, const int directionY);
 		void setStoneColor(const int row, const int column, King::Engine::Texture color);
-		void setStoneVisited(const int row, const int column, bool visited);
 	private:
 		std::pair<float, float> mPositions[8][8];
 		King::Engine::Texture mColors[8][8];
@@ -321,22 +317,6 @@ namespace King {
 		return mPimpl->mGameGrid->getStoneColors();
 	}
 
-	void Engine::resetStoneVisited() {
-		for (int y = 0; y < 8; ++y) {
-			for (int x = 0; x < 8; ++x) {
-				mPimpl->mGameGrid->setStoneVisited(y, x, false);
-			}
-		}
-	}
-
-	void Engine::setStoneVisited(const int row, const int column, bool visited) {
-		mPimpl->mGameGrid->setStoneVisited(row, column, visited);
-	}
-
-	const bool(&Engine::getStoneVisited() const)[8][8] {
-		return mPimpl->mGameGrid->getStoneVisited();
-	}
-
 	void Engine::EngineImplementation::Start() {
 		while (!mQuit) {
 			SDL_GL_SwapWindow(mSdlWindow);
@@ -445,18 +425,4 @@ namespace King {
 	{
 		return mColors;
 	}
-
-	const bool(&Engine::GameGrid::getStoneVisited() const)[8][8]
-	{
-		return mVisited;
-	}
-
-	void Engine::GameGrid::setStoneVisited(const int row, const int column, bool visited)
-	{
-		// check for writting out of bounds
-		if (row >= 0 && row < 8 && column >= 0 && column < 8) {
-			mVisited[row][column] = visited;
-		}
-	}
-
 }

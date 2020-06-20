@@ -5,8 +5,7 @@
 #include <glew/glew.h>
 #include <sdl/SDL.h>
 #include <sdl/SDL_image.h>
-
-#include "iostream"
+#include <iostream>
 
 namespace King {
 	SdlSurface::SdlSurface(const char* filename)
