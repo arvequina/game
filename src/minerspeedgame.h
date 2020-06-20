@@ -29,6 +29,7 @@ private:
 	void destroyAndFillStones(const std::vector<position>& vect);
 	void assignColorToDestroyedStones(const int row, const int column);
 	void destroyStone(const position& pos);
+	std::vector<position> moreStonesToDestroy();
 	void initializeTimer();
 	bool isTimeOver();
 	King::Engine mEngine;

@@ -4,7 +4,7 @@
 
 constexpr auto WINDOW_WITDH = 755;
 constexpr auto WINDOW_HEIGHT = 600;
-constexpr auto MAX_GAME_TIME = 60.0f;
+constexpr auto MAX_GAME_TIME = 660.0f;
 constexpr auto POS_BEGIN_X = 330;
 constexpr auto POS_BEGIN_Y = 100;
 constexpr auto SCENE_SIZE = 344;

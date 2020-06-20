@@ -123,39 +123,14 @@ void MinerSpeedGame::swap(const int row, const int column) {
 		} else { // put stones to original location if swap not possible
 			mEngine.swapStoneColor(mRow, mColumn, column - mColumn, row - mRow);
 		}
-
-		//bool ready = false;
-		//while (!ready) {
-		//	if (destroyedStonesOrigin.size() != 0 || destroyedStonesEnd.size() !=0 || destroyedNextStones.size() != 0) {
-		//		fillDestroyedStones(destroyedStonesOrigin);
-		//		fillDestroyedStones(destroyedStonesEnd);
-		//		fillDestroyedStones(destroyedNextStones);
-		//		destroyedStonesOrigin.clear();
-		//		destroyedStonesEnd.clear();
-		//		destroyedNextStones.clear();
-		//	} else { // put them back
-		//		mEngine.swapStoneColor(mRow, mColumn, column - mColumn, row - mRow);
-		//		ready = true;
-		//	}
-		//	// FIXME: confusing part. Goal -> once swap was performed and a stone combination is performed
-		//	// we need to check again for possible combinations as the grid has been modified
-		//	bool destroy = false;
-		//	for (int y = 0; y < GAME_GRID_SIZE; ++y) {
-		//		for (int x = 0; x < GAME_GRID_SIZE; ++x) {
-		//			destroyedNextStones = getStonesToDestroy(y, x);
-		//			if (destroyedNextStones.size() != 0) {
-		//				destroy = true;
-		//				break;
-		//			}
-		//		}
-		//		if (destroy) {
-		//			break;
-		//		}
-		//	}
-		//	if (!destroy) {
-		//		ready = true;
-		//	}
-		//}
+		bool moreStones = true;
+		while (moreStones) {
+			std::vector<position> stonesToDestroy = moreStonesToDestroy();
+			destroyAndFillStones(stonesToDestroy);
+			if (stonesToDestroy.empty()) {
+				moreStones = false;
+			}
+		}
 	}
 }
 
@@ -206,19 +181,20 @@ std::vector<position> MinerSpeedGame::getStonesToDestroy(const int row, const in
 		}
 	}
 
-	if (resultRow.size() < 2) { // nothing happens
+	// nothing to do
+	if (resultRow.size() < 2) { 
 		resultRow.clear();
 	}
-
-	if (resultRow.size() == 0 && resultColumn.size() == 0) { // nothing happens in either cases
+	// nothing to do in these cases
+	if (resultRow.size() == 0 && resultColumn.size() == 0) { 
 		return std::vector<position>();
 	}
-
+	// add initial point if other direction is empty
 	if (resultRow.size() == 0) {
 		resultColumn.push_back(position(row, column));
 		return resultColumn;
 	}
-
+	// add initial point if other direction is empty
 	if (resultColumn.size() == 0) {
 		resultRow.push_back(position(row, column));
 		return resultRow;
@@ -265,7 +241,6 @@ void MinerSpeedGame::assignColorToDestroyedStones(const int row, const int colum
 	for (int nextRow = row - 1; nextRow >= 0; --nextRow) {
 		if (mEngine.getStoneColors()[nextRow][column] != King::Engine::Texture::TEXTURE_EMPTY) {
 			// assign current color from the stone above
-			//mEngine.swapStoneColor(row, column, 0, nextRow - row);
 			mEngine.setStoneColor(row, column, mEngine.getStoneColors()[nextRow][column]);
 			mEngine.setStoneColor(nextRow, column, King::Engine::Texture::TEXTURE_EMPTY);
 			found = true;
@@ -277,6 +252,25 @@ void MinerSpeedGame::assignColorToDestroyedStones(const int row, const int colum
 	}
 	assignColorToDestroyedStones(row - 1, column);
 	return;
+}
+
+std::vector<position> MinerSpeedGame::moreStonesToDestroy() {
+	// we need to check again for possible combinations as the grid has been modified
+	std::vector<position> stonesToDestroy = std::vector<position>();
+	bool exitLoop = false;
+	for (int y = 0; y < GAME_GRID_SIZE; ++y) {
+		for (int x = 0; x < GAME_GRID_SIZE; ++x) {
+			stonesToDestroy = getStonesToDestroy(y, x);
+			if (!stonesToDestroy.empty()) {
+				exitLoop = true;
+				break;
+			}
+		}
+		if (exitLoop) {
+			break;
+		}
+	}
+	return stonesToDestroy;
 }
 
 // FIXME: rotation just in case
