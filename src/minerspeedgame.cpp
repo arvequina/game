@@ -114,28 +114,6 @@ void MinerSpeedGame::swap(const int row, const int column) {
 	if (row >= 0 && abs(mRow - row) == 1) {
 		swaped = true;
 		mEngine.swapStoneColor(mRow, mColumn, 0, row - mRow);
-		/*combinations = scan();
-		if (combinations->empty()) {
-			// revert swap
-			mEngine.swapStoneColor(mRow, mColumn, 0, row - mRow);
-		}
-		else {
-			// remove stones and collapse
-			while (!combinations->empty()) {
-				std::vector<position>* combination = combinations->back();
-				combinations->pop_back();
-				for (std::vector<position>::iterator it = combination->begin(); it != combination->end(); ++it) {
-					std::cout << "[DEBUG] iterator : " << it->first << std::endl;
-					mEngine.setStoneColor(it->first, it->second, King::Engine::Texture::TEXTURE_EMPTY);
-				}
-			}
-			// reorganize and fill empty slots
-			mEngine.fillScene(mTimeLeft); // tmp function
-			// once full grid call scan again to check combinations
-            // ...
-		}
-		// just allow one swap
-		mEngine.SetMouseButtonDown(false);*/
 	}
 	else if (column >= 0 && abs(mColumn - column) == 1) {
 		// if condition to do swap (3+ stones same color) then do swap
@@ -150,58 +128,47 @@ void MinerSpeedGame::swap(const int row, const int column) {
 		if (mEngine.getStoneColors()[mRow][mColumn] == mEngine.getStoneColors()[row][column]) {
 			return;
 		}
-
-		std::cout << "waped " << mRow << mColumn << "," << row << column;
-
-		std::vector<std::pair<int, int>> destroyedStones1,destroyedStones2;
+		std::vector<position> destroyedStones1,destroyedStones2, destroyedNewStones;
 		destroyedStones1 = destroyStones(mRow, mColumn);
 		destroyedStones2 = destroyStones(row, column);
-		std::cout << "\n first vector" << destroyedStones1.size();
-		std::cout << "\n second vector" << destroyedStones2.size();
-		if (destroyedStones1.size() != 0 || destroyedStones2.size() !=0) {
-			fillDestroyedStones(destroyedStones1);
-			fillDestroyedStones(destroyedStones2);
+		destroyedNewStones = std::vector<position>();
+		bool ready = false;
+		while (!ready) {
+			if (destroyedStones1.size() != 0 || destroyedStones2.size() !=0 || destroyedNewStones.size() != 0) {
+				fillDestroyedStones(destroyedStones1);
+				fillDestroyedStones(destroyedStones2);
+				fillDestroyedStones(destroyedNewStones);
+				destroyedStones1.clear();
+				destroyedStones2.clear();
+				destroyedNewStones.clear();
+			} else { // put them back
+				mEngine.swapStoneColor(mRow, mColumn, column - mColumn, row - mRow);
+				ready = true;
+			}
+			bool destroy = false;
+			for (int y = 0; y < 8; ++y) {
+				for (int x = 0; x < 8; ++x) {
+					destroyedNewStones = destroyStones(y, x);
+					if (destroyedNewStones.size() != 0) {
+						destroy = true;
+						break;
+					}
+				}
+				if (destroy) {
+					break;
+				}
+			}
+			if (!destroy) {
+				ready = true;
+			}
 		}
-		else { // put them back
-			mEngine.swapStoneColor(mRow, mColumn, column - mColumn, row - mRow);
-		}
-
-
-	}
-	
-}
-
-// FIXME: created swap function to do a general one, this one works locally
-void MinerSpeedGame::verifySwap(const int row, const int column) {
-	// only allow row and column-wise moves
-	if (row >= 0 && abs(mRow - row) == 1) {
-		// if condition to do swap (3+ stones same color) then do swap
-		mEngine.swapStoneColor(mRow, mColumn, 0, row - mRow);
-		bool allowed = verifyStoneCombinations(row, column);
-		if (!allowed) {
-		// revert swap
-			mEngine.swapStoneColor(mRow, mColumn, 0, row - mRow);
-		}
-		// just allow one swap
-		mEngine.SetMouseButtonDown(false);
-	}
-	else if (column >= 0 && abs(mColumn - column) == 1) {
-		// if condition to do swap (3+ stones same color) then do swap
-		mEngine.swapStoneColor(mRow, mColumn, column - mColumn, 0);
-		bool allowed = verifyStoneCombinations(row, column);
-		if (!allowed) {
-			// revert swap
-			mEngine.swapStoneColor(mRow, mColumn, column - mColumn, 0);
-		}
-		// just allow one swap
-		mEngine.SetMouseButtonDown(false);
 	}
 }
 
 std::vector<std::pair<int,int>> MinerSpeedGame::destroyStones(const int row, const int column) {
 
 	std::vector<std::pair<int, int>> resultColumn, resultRow;
-	resultColumn.reserve(8+4);//max we destroy entire row(8) and half column(4) or the opposite, for a totale of 12
+	resultColumn.reserve(12);//max we destroy entire row(8) and half column(4) or the opposite, for a totale of 12
 	resultRow.reserve(12);
 
 	King::Engine::Texture currentColor = mEngine.getStoneColors()[row][column];
@@ -308,8 +275,6 @@ void MinerSpeedGame::fillDestroyedStones(const std::vector<std::pair<int,int>> &
 }
 
 bool MinerSpeedGame::fixEmptyStone(const int row, const int column) {
-
-
 	// nothing above so generate a new one
 	if (row == 0) {
 		//mEngine.setStoneColor(row, column, King::Engine::Texture::TEXTURE_EMPTY/*(King::Engine::Texture)(rand() % 5 + 1)*/);
