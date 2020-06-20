@@ -13,6 +13,7 @@ typedef std::pair<int, int> position;
 
 //**********************************************************************
 
+#define maxGameTime 600.0f
 class MinerSpeedGame : public King::Updater {
 public:
 
@@ -26,9 +27,12 @@ private:
 	void mouseDownEvent();
 	void mouseUpEvent();
 	void verifySwap(const int row, const int column);
+	std::vector<std::pair<int, int>> destroyStones(const int x, const int y);
 	void swap(const int row, const int column);
 	std::vector<position>* scanPosition(const int row, const int column);
 	std::vector<std::vector<position>*> * scan();
+	void fillDestroyedStones(const std::vector<std::pair<int, int>>& vect);
+	bool fixEmptyStone(const int row, const int column);
 	bool verifyStoneCombinations(const int row, const int column);
 	void initializeTimer();
 	bool checkTimeOver();
