@@ -21,8 +21,8 @@
 #include "Updater.h"
 
 namespace King {
-	static const int WindowWidth = 800;
-	static const int WindowHeight = 600;
+	static const int WindowWidth = WINDOW_WITDH;
+	static const int WindowHeight = WINDOW_HEIGHT;
 	static const float MaxFrameTicks = 300.0f;
 	static const float TextScale = 0.5f;
 
@@ -33,16 +33,14 @@ namespace King {
 			initialize();
 		}
 		void initialize();
-		const std::pair<float, float>(&getStonePositions() const)[8][8];
-		const King::Engine::Texture(&getStoneColors() const)[8][8];
+		const std::pair<float, float>(&getStonePositions() const)[GAME_GRID_SIZE][GAME_GRID_SIZE];
+		const King::Engine::Texture(&getStoneColors() const)[GAME_GRID_SIZE][GAME_GRID_SIZE];
 		void setStonePosition(const int row, const int column, const float mouseX, const float mouseY);
 		void swapStoneColor(const int row, const int column, const int directionX, const int directionY);
 		void setStoneColor(const int row, const int column, King::Engine::Texture color);
 	private:
-		std::pair<float, float> mPositions[8][8];
-		King::Engine::Texture mColors[8][8];
-		bool mVisited[8][8];
-
+		std::pair<float, float> mPositions[GAME_GRID_SIZE][GAME_GRID_SIZE];
+		King::Engine::Texture mColors[GAME_GRID_SIZE][GAME_GRID_SIZE];
 	};
 
 	struct Engine::EngineImplementation {
@@ -66,7 +64,7 @@ namespace King {
 			: mSdl(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_NOPARACHUTE)
 			, mSdlWindow(WindowWidth, WindowHeight)
 			, mGlContext(mSdlWindow)
-			, mLastFrameSeconds(1.0f / 60.0f)
+			, mLastFrameSeconds(1.0f / FPS)
 			, mMouseX(WindowWidth * 0.5f)
 			, mMouseY(WindowHeight * 0.5f)
 			, mMouseButtonDown(false)
@@ -271,11 +269,11 @@ namespace King {
 
 	void Engine::fillScene(float timeLeft) {
 		Render(King::Engine::TEXTURE_BACKGROUND, 0.0f, 0.0f);
-		const float pos_x_ini = 330.0f;
-		const float pos_y_ini = 100.0f;
+		const float pos_x_ini = POS_BEGIN_X;
+		const float pos_y_ini = POS_BEGIN_Y;
 		// nested loop of 8 by 8 (low computing cost)
-		for (int row = 0; row < 8; ++row) {
-			for (int column = 0; column < 8; ++column) {
+		for (int row = 0; row < GAME_GRID_SIZE; ++row) {
+			for (int column = 0; column < GAME_GRID_SIZE; ++column) {
 				Render(mPimpl->mGameGrid->getStoneColors()[row][column], pos_x_ini + mPimpl->mGameGrid->getStonePositions()[row][column].first, 
 					                                pos_y_ini + mPimpl->mGameGrid->getStonePositions()[row][column].second);
 			}
@@ -301,7 +299,7 @@ namespace King {
 		mPimpl->mGameGrid->setStonePosition(row, column, mouseX, mouseY);
 	}
 
-	const std::pair<float, float>(&Engine::getStonePositions() const)[8][8] {
+	const std::pair<float, float>(&Engine::getStonePositions() const)[GAME_GRID_SIZE][GAME_GRID_SIZE] {
 		return mPimpl->mGameGrid->getStonePositions();
 	}
 
@@ -313,8 +311,12 @@ namespace King {
 		mPimpl->mGameGrid->setStoneColor(row, column, color);
 	}
 
-	const King::Engine::Texture(&Engine::getStoneColors() const)[8][8] {
+	const King::Engine::Texture(&Engine::getStoneColors() const)[GAME_GRID_SIZE][GAME_GRID_SIZE] {
 		return mPimpl->mGameGrid->getStoneColors();
+	}
+
+    King::Engine::Texture Engine::getRandomStone() {
+		return static_cast<King::Engine::Texture>(rand() % 5 + 1);
 	}
 
 	void Engine::EngineImplementation::Start() {
@@ -332,7 +334,7 @@ namespace King {
 			mLastFrameSeconds = lastFrameTicks * 0.001f;
 
 			// not updating all the time
-			if (mUpdater) { //&& mLastFrameSeconds > 0.01) {
+			if (mUpdater && mLastFrameSeconds > 0.01) {
 				mUpdater->Update();
 			}
 		}
@@ -372,20 +374,20 @@ namespace King {
 		const float pos_y_ini = 0.0f;
 		//const float pos_x_end = 345.0f;
 		//const float pos_y_end = 345.0f;
-		const float pos_increment = 43.0f;
+		const float pos_increment = STONE_SIZE;
 		int column = 0, row = 0;
 		// make it random at some point
 		// nested loop for small grid 8x8
 		std::srand(time(0));
 		float posX = pos_x_ini, posY = pos_y_ini;
-		for (int row = 0; row < 8; ++row) {
-			for (int column = 0; column < 8; ++column) {
+		for (int row = 0; row < GAME_GRID_SIZE; ++row) {
+			for (int column = 0; column < GAME_GRID_SIZE; ++column) {
 				mPositions[row][column].first = posX + column * pos_increment;
 				mPositions[row][column].second = posY + row * pos_increment;
 				
 				King::Engine::Texture color;
 				do {
-					color = (King::Engine::Texture)(rand() % 5 + 1);
+					color = getRandomStone();
 				} while ((row >= 2 && mColors[row - 1][column] == color && mColors[row - 2][column] == color)
 					|| (column >= 2 && mColors[row][column - 1] == color && mColors[row][column - 2] == color));
 
@@ -408,7 +410,7 @@ namespace King {
 	{
 		// check for writting/reading out of bounds
 		if ((row + directionY >= 0 && column + directionX >= 0) &&
-			(row + directionY < 8 && column + directionX < 8)) {
+			(row + directionY < GAME_GRID_SIZE && column + directionX < GAME_GRID_SIZE)) {
 			std::swap(mColors[row + directionY][column + directionX], mColors[row][column]);
 		}
 	}
@@ -416,12 +418,12 @@ namespace King {
 	void Engine::GameGrid::setStoneColor(const int row, const int column, King::Engine::Texture color)
 	{
 		// check for writting out of bounds
-		if (row >= 0 && row < 8 && column >= 0 && column < 8) {
+		if (row >= 0 && row < GAME_GRID_SIZE && column >= 0 && column < GAME_GRID_SIZE) {
 			mColors[row][column] = color;
 		}
 	}
 
-	const King::Engine::Texture(&Engine::GameGrid::getStoneColors() const)[8][8]
+	const King::Engine::Texture(&Engine::GameGrid::getStoneColors() const)[GAME_GRID_SIZE][GAME_GRID_SIZE]
 	{
 		return mColors;
 	}

@@ -1,9 +1,16 @@
 // (C) king.com Ltd 2014
-
-#pragma once
-
 #include <glm/fwd.hpp>
 #include <memory>
+
+constexpr auto WINDOW_WITDH = 755;
+constexpr auto WINDOW_HEIGHT = 600;
+constexpr auto MAX_GAME_TIME = 60.0f;
+constexpr auto POS_BEGIN_X = 330;
+constexpr auto POS_BEGIN_Y = 100;
+constexpr auto SCENE_SIZE = 344;
+constexpr auto STONE_SIZE = 43;
+constexpr auto GAME_GRID_SIZE = 8;
+constexpr auto FPS = 60.0f;
 
 namespace King {
 	class Updater;
@@ -40,7 +47,6 @@ namespace King {
 		void Render(Texture texture, const glm::mat4& transform);
 		void Render(Texture texture, float x, float y, float rotation = 0.0f);
 
-
 		float CalculateStringWidth(const char* text) const;
 		void Write(const char* text, const glm::mat4& transform);
 		void Write(const char* text, float x, float y, float rotation = 0.0f);
@@ -55,6 +61,7 @@ namespace King {
 		void swapStoneColor(const int row, const int column, const int directionX, const int directionY);
 		void setStoneColor(const int row, const int column, King::Engine::Texture color);
 		const King::Engine::Texture(&getStoneColors() const)[8][8];
+		static King::Engine::Texture getRandomStone();
 	
 		int GetWidth() const;
 		int GetHeight() const;

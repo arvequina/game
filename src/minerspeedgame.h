@@ -12,8 +12,6 @@
 typedef std::pair<int, int> position;
 
 //**********************************************************************
-
-#define maxGameTime 600.0f
 class MinerSpeedGame : public King::Updater {
 public:
 
