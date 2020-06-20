@@ -61,7 +61,7 @@ namespace King {
 		void swapStoneColor(const int row, const int column, const int directionX, const int directionY);
 		void setStoneColor(const int row, const int column, King::Engine::Texture color);
 		const King::Engine::Texture(&getStoneColors() const)[GAME_GRID_SIZE][GAME_GRID_SIZE];
-		static King::Engine::Texture getRandomStone();
+		static King::Engine::Texture getRandomStoneColor();
 	
 		int GetWidth() const;
 		int GetHeight() const;

@@ -315,7 +315,7 @@ namespace King {
 		return mPimpl->mGameGrid->getStoneColors();
 	}
 
-    King::Engine::Texture Engine::getRandomStone() {
+    King::Engine::Texture Engine::getRandomStoneColor() {
 		return static_cast<King::Engine::Texture>(rand() % 5 + 1);
 	}
 
@@ -387,7 +387,7 @@ namespace King {
 				
 				King::Engine::Texture color;
 				do {
-					color = getRandomStone();
+					color = getRandomStoneColor();
 				} while ((row >= 2 && mColors[row - 1][column] == color && mColors[row - 2][column] == color)
 					|| (column >= 2 && mColors[row][column - 1] == color && mColors[row][column - 2] == color));
 

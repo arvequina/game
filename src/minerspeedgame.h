@@ -21,15 +21,16 @@ public:
 	void Update();
 
 private:
-	void eventsController();
+	void maybeDispatchMouseEvents();
 	void mouseDownEvent();
 	void mouseUpEvent();
-	std::vector<std::pair<int, int>> destroyStones(const int x, const int y);
+	std::vector<position> getStonesToDestroy(const int x, const int y);
 	void swap(const int row, const int column);
-	void fillDestroyedStones(const std::vector<position>& vect);
-	bool fixEmptyStone(const int row, const int column);
+	void destroyAndFillStones(const std::vector<position>& vect);
+	void assignColorToDestroyedStones(const int row, const int column);
+	void destroyStone(const position& pos);
 	void initializeTimer();
-	bool checkTimeOver();
+	bool isTimeOver();
 	King::Engine mEngine;
 	float mRotation;
 	float mPosBeginX;
