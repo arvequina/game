@@ -52,16 +52,12 @@ void MinerSpeedGame::eventsController() {
 void MinerSpeedGame::mouseDownEvent() {
 	if (mEngine.GetMouseButtonDown()) {
 		if (mFirst) { // first time serves to select stone, then user can drag or just click somewhere else
-			// check mouse pos and intersection in the 8x8 grid
-			mPosBeginX = mEngine.GetMouseX();
-			mPosBeginY = mEngine.GetMouseY();
-			// substract initial point
-			mPosBeginX -= POS_BEGIN_X;
-			mPosBeginY -= POS_BEGIN_Y;
+			// check mouse pos and intersection in the 8x8 grid and substract initial point
+			mPosBeginX = mEngine.GetMouseX() - POS_BEGIN_X;
+			mPosBeginY = mEngine.GetMouseY() - POS_BEGIN_Y;
 			// FIXME: add variable SELECTED for each stone
 			// calculate column and row (FIXME: add epsilon trait for comparison)
-			mColumn = -1;
-			mRow = -1;
+			mColumn = -1; mRow = -1;
 			if (mPosBeginX > 0.0f && mPosBeginY > 0.0f && mPosBeginX < SCENE_SIZE && mPosBeginY < SCENE_SIZE) {
 				mColumn = int(mPosBeginX) / STONE_SIZE;
 				mRow = int(mPosBeginY) / STONE_SIZE;
@@ -70,15 +66,11 @@ void MinerSpeedGame::mouseDownEvent() {
 			mFirst = false;
 		} else { 
 			// DRAGGING scenario
-			// check mouse pos and intersection in the 8x8 grid
-			mPosEndX = mEngine.GetMouseX();
-			mPosEndY = mEngine.GetMouseY();
-			// substract initial point
-			mPosEndX -= POS_BEGIN_X;
-			mPosEndY -= POS_BEGIN_Y;
+			// check mouse pos and intersection in the 8x8 grid and substract initial point
+			mPosEndX = mEngine.GetMouseX() - POS_BEGIN_X;
+			mPosEndY = mEngine.GetMouseY() - POS_BEGIN_Y;
 			// calculate column and row (FIXME: add epsilon trait for comparison)
-			int column = -1;
-			int row = -1;
+			int column = -1, row = -1;
 			if (mPosEndX > 0.000f && mPosEndY > 0.000f && mPosEndX < SCENE_SIZE && mPosEndY < SCENE_SIZE) {
 				column = int(mPosEndX) / STONE_SIZE;
 				row = int(mPosEndY) / STONE_SIZE;
@@ -86,7 +78,7 @@ void MinerSpeedGame::mouseDownEvent() {
 			// check if swap is possible
 			std::cout << "[DEBUG] END row/column :" << row << " - " << column << std::endl;
 			if (row >-1 && column > -1 && mColumn > -1 && mRow > -1) {
-				//verifySwap(row, column);
+				// FIXME: not working properly
 				swap(row, column);
 			}
 		}
@@ -106,13 +98,11 @@ void MinerSpeedGame::mouseUpEvent() {
 
 void MinerSpeedGame::swap(const int row, const int column) {
 	// only allow row and column-wise moves
-	std::vector<std::vector<position>*> *combinations = new std::vector<std::vector<position>*>();
 	int swaped = false;
 	if (row >= 0 && abs(mRow - row) == 1) {
 		swaped = true;
 		mEngine.swapStoneColor(mRow, mColumn, 0, row - mRow);
-	}
-	else if (column >= 0 && abs(mColumn - column) == 1) {
+	} else if (column >= 0 && abs(mColumn - column) == 1) {
 		// if condition to do swap (3+ stones same color) then do swap
 		swaped = true;
 		mEngine.swapStoneColor(mRow, mColumn, column - mColumn, 0);
@@ -125,28 +115,30 @@ void MinerSpeedGame::swap(const int row, const int column) {
 		if (mEngine.getStoneColors()[mRow][mColumn] == mEngine.getStoneColors()[row][column]) {
 			return;
 		}
-		std::vector<position> destroyedStones1,destroyedStones2, destroyedNewStones;
-		destroyedStones1 = destroyStones(mRow, mColumn);
-		destroyedStones2 = destroyStones(row, column);
-		destroyedNewStones = std::vector<position>();
+		std::vector<position> destroyedStonesOrigin,destroyedStonesEnd, destroyedNextStones;
+		destroyedStonesOrigin = destroyStones(mRow, mColumn);
+		destroyedStonesEnd    = destroyStones(row, column);
+		destroyedNextStones   = std::vector<position>();
 		bool ready = false;
 		while (!ready) {
-			if (destroyedStones1.size() != 0 || destroyedStones2.size() !=0 || destroyedNewStones.size() != 0) {
-				fillDestroyedStones(destroyedStones1);
-				fillDestroyedStones(destroyedStones2);
-				fillDestroyedStones(destroyedNewStones);
-				destroyedStones1.clear();
-				destroyedStones2.clear();
-				destroyedNewStones.clear();
+			if (destroyedStonesOrigin.size() != 0 || destroyedStonesEnd.size() !=0 || destroyedNextStones.size() != 0) {
+				fillDestroyedStones(destroyedStonesOrigin);
+				fillDestroyedStones(destroyedStonesEnd);
+				fillDestroyedStones(destroyedNextStones);
+				destroyedStonesOrigin.clear();
+				destroyedStonesEnd.clear();
+				destroyedNextStones.clear();
 			} else { // put them back
 				mEngine.swapStoneColor(mRow, mColumn, column - mColumn, row - mRow);
 				ready = true;
 			}
+			// FIXME: confusing part. Goal -> once swap was performed and a stone combination is performed
+			// we need to check again for possible combinations as the grid has been modified
 			bool destroy = false;
 			for (int y = 0; y < GAME_GRID_SIZE; ++y) {
 				for (int x = 0; x < GAME_GRID_SIZE; ++x) {
-					destroyedNewStones = destroyStones(y, x);
-					if (destroyedNewStones.size() != 0) {
+					destroyedNextStones = destroyStones(y, x);
+					if (destroyedNextStones.size() != 0) {
 						destroy = true;
 						break;
 					}
@@ -163,28 +155,26 @@ void MinerSpeedGame::swap(const int row, const int column) {
 }
 
 std::vector<position> MinerSpeedGame::destroyStones(const int row, const int column) {
-
+	// FIXME: be sure this process works well
 	std::vector<position> resultColumn, resultRow;
 	resultColumn.reserve(12);//max we destroy entire row(8) and half column(4) or the opposite, for a totale of 12
 	resultRow.reserve(12);
 
 	King::Engine::Texture currentColor = mEngine.getStoneColors()[row][column];
 	// check left in the same column and keep the row
-	for (int leftX = column - 1; leftX >= 0; leftX--) {
+	for (int leftX = column - 1; leftX >= 0; --leftX) {
 		if(currentColor == mEngine.getStoneColors()[row][leftX]){
 			resultColumn.push_back(position(row, leftX));
-		}
-		else {
+		} else {
 			break;
 		}
 	}
 
 	// check right in the same column and keep the row
-	for (int rightX = column + 1; rightX < GAME_GRID_SIZE; rightX++) {
+	for (int rightX = column + 1; rightX < GAME_GRID_SIZE; ++rightX) {
 		if (currentColor == mEngine.getStoneColors()[row][rightX]) {
 			resultColumn.push_back(position(row, rightX));
-		}
-		else {
+		} else {
 			break;
 		}
 	}
@@ -194,21 +184,19 @@ std::vector<position> MinerSpeedGame::destroyStones(const int row, const int col
 	}
 
 	// check down in the same row and keep the column
-	for (int rowY = row + 1; rowY < GAME_GRID_SIZE; rowY++) {
+	for (int rowY = row + 1; rowY < GAME_GRID_SIZE; ++rowY) {
 		if (currentColor == mEngine.getStoneColors()[rowY][column]) {
 			resultRow.push_back(position(rowY, column));
-		}
-		else {
+		} else {
 			break;
 		}
 	}
 
 	// check up in the same row and keep the column
-	for (int rowY = row - 1; rowY >= 0; rowY--) {
+	for (int rowY = row - 1; rowY >= 0; --rowY) {
 		if (currentColor == mEngine.getStoneColors()[rowY][column]) {
 			resultRow.push_back(position(rowY, column));
-		}
-		else {
+		} else {
 			break;
 		}
 	}
