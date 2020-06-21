@@ -268,8 +268,8 @@ namespace King {
 
 	void Engine::fillScene() {
 		Render(King::Engine::TEXTURE_BACKGROUND, 0.0f, 0.0f);
-		const float pos_x_ini = POS_BEGIN_X;
-		const float pos_y_ini = POS_BEGIN_Y + OFFSET_RENDER;
+		const float pos_x_ini = GRID_POS_BEGIN_X;
+		const float pos_y_ini = GRID_POS_BEGIN_Y + OFFSET_RENDER;
 		// nested loop of 8 by 8 (low computing cost)
 		for (int row = 0; row < GAME_GRID_SIZE_Y; ++row) {
 			for (int column = 0; column < GAME_GRID_SIZE_X; ++column) {

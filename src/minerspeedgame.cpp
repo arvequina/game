@@ -3,13 +3,8 @@
 MinerSpeedGame::MinerSpeedGame()
 	: mEngine("./assets")
 	, mRotation(0.0f)
-	, mPosBeginX(0.0f)
-	, mPosBeginY(0.0f)
-	, mPosEndX(0.0f)
-	, mPosEndY(0.0f)
 	, mFirst(true)
-	, mColumn(-1)
-	, mRow(-1)
+	, mGridOriginIndex(-1,-1)
 {}
 
 void MinerSpeedGame::Start() {
@@ -37,48 +32,57 @@ void MinerSpeedGame::maybeDispatchMouseDownEvent() {
 	if (!mEngine.GetMouseButtonDown()) {
 		return;
 	}
-	if (mFirst) { // first time serves to select stone, then user can drag or just click somewhere else
-		// check mouse pos and intersection in the 8x8 grid and substract initial point
-		mPosBeginX = mEngine.GetMouseX() - POS_BEGIN_X;
-		mPosBeginY = mEngine.GetMouseY() - POS_BEGIN_Y;
-		// calculate column and row (FIXME: add epsilon trait for comparison)
-		mColumn = -1; mRow = -1;
-		if (mPosBeginX > 0.0f && mPosBeginY > 0.0f && mPosBeginX < SCENE_SIZE_X && mPosBeginY < SCENE_SIZE_Y) {
-			mColumn = static_cast<int>(mPosBeginX) / STONE_SIZE_X;
-			mRow = static_cast<int>(mPosBeginY) / STONE_SIZE_Y;
-		}
-		mFirst = false;
+	// first time serves to select stone, then user can drag or just click somewhere else
+	if (mFirst) { 
+		calculateStoneOriginPosition();
 	} else { // DRAGGING scenario
-		// check mouse pos and intersection in the 8x8 grid and substract initial point
-		mPosEndX = mEngine.GetMouseX() - POS_BEGIN_X;
-		mPosEndY = mEngine.GetMouseY() - POS_BEGIN_Y;
-		// calculate endColumn and endRow
-		int endColumn = -1, endRow = -1;
-		if (mPosEndX > std::numeric_limits<float>::epsilon() && 
-			mPosEndY > std::numeric_limits<float>::epsilon() &&
-		    mPosEndX < SCENE_SIZE_X && mPosEndY < SCENE_SIZE_Y) {
-			endColumn = static_cast<int>(mPosEndX) / STONE_SIZE_X;
-			endRow = static_cast<int>(mPosEndY) / STONE_SIZE_Y;
-		}
-		// check if swap is possible
-		if (endColumn > -1 && endRow > -1 && mColumn > -1 && mRow > -1) {
-			swap(mColumn, mRow, endColumn, endRow);
-		}
+		calculateStoneEndPosition();
 	}
+}
+
+void MinerSpeedGame::calculateStoneOriginPosition() {
+	// check mouse pos and intersection in the 8x8 grid and substract initial point
+	mGridOriginIndex = getAndConvertMousePositionToGridIndex();
+	mFirst = false;
+}
+
+void MinerSpeedGame::calculateStoneEndPosition() {
+	// check mouse pos and intersection in the 8x8 grid and substract initial point
+	position gridEndIndex = getAndConvertMousePositionToGridIndex();
+	// check if swap is possible
+	if (gridEndIndex.first > -1 && gridEndIndex.second > -1 && mGridOriginIndex.first > -1 && mGridOriginIndex.second > -1) {
+		tryToSwapStones(mGridOriginIndex.first, mGridOriginIndex.second, gridEndIndex.first, gridEndIndex.second);
+	}
+}
+
+position MinerSpeedGame::getAndConvertMousePositionToGridIndex() {
+	position gridIndex(-1, -1);
+	auto gridPos = translateMouseToGridPosition();
+	if (gridPos.first > std::numeric_limits<float>::epsilon() &&
+		gridPos.second > std::numeric_limits<float>::epsilon() &&
+		gridPos.first < RENDER_GRID_SIZE_X && gridPos.second < RENDER_GRID_SIZE_Y) {
+		gridIndex.first = static_cast<int>(gridPos.first) / STONE_SIZE_X;
+		gridIndex.second = static_cast<int>(gridPos.second) / STONE_SIZE_Y;
+	}
+	return gridIndex;
+}
+
+inline positionF MinerSpeedGame::translateMouseToGridPosition() const {
+	return positionF(mEngine.GetMouseX() - GRID_POS_BEGIN_X, mEngine.GetMouseY() - GRID_POS_BEGIN_Y);
 }
 
 void MinerSpeedGame::maybeDispatchMouseUpEvent() {
 	if (mEngine.GetMouseButtonUp()) {
 		mFirst = true;
 		mEngine.SetMouseButtonUp(false);
-		mPosEndX = mEngine.GetMouseX();
-		mPosEndY = mEngine.GetMouseY();
+		float posEndX = mEngine.GetMouseX();
+		float posEndY = mEngine.GetMouseY();
 		// check swap of stones if possible
 		// ...
 	}
 }
 
-void MinerSpeedGame::swap(const int originColumn, const int originRow, const int endColumn, const int endRow) {
+void MinerSpeedGame::tryToSwapStones(const int originColumn, const int originRow, const int endColumn, const int endRow) {
 	// only allow row and column-wise moves
 	int swaped = false;
 	if (endRow >= 0 && abs(originRow - endRow) == 1) {
@@ -97,12 +101,12 @@ void MinerSpeedGame::swap(const int originColumn, const int originRow, const int
 		if (mEngine.getStoneColors()[originColumn][originRow] == mEngine.getStoneColors()[endColumn][endRow]) {
 			return;
 		}
-		std::vector<position> destroyStonesOrigin, destroyStonesEnd;
-		destroyStonesOrigin = getStonesToDestroy(originColumn, originRow);
-		destroyStonesEnd    = getStonesToDestroy(endColumn, endRow);
-		if (destroyStonesOrigin.size() != 0 || destroyStonesEnd.size() !=0) {
-			destroyAndFillStones(destroyStonesOrigin);
-			destroyAndFillStones(destroyStonesEnd);
+		std::vector<position> destroyOriginStones, destroyEndStones;
+		destroyOriginStones = getStonesToDestroy(originColumn, originRow);
+		destroyEndStones    = getStonesToDestroy(endColumn, endRow);
+		if (destroyOriginStones.size() != 0 || destroyEndStones.size() !=0) {
+			destroyAndFillStones(destroyOriginStones);
+			destroyAndFillStones(destroyEndStones);
 		} else { // put stones to original location if swap not possible
 			mEngine.swapStoneColor(originColumn, originRow, endColumn - originColumn, endRow - originRow);
 		}
@@ -119,7 +123,8 @@ void MinerSpeedGame::swap(const int originColumn, const int originRow, const int
 
 std::vector<position> MinerSpeedGame::getStonesToDestroy(const int column, const int row) {
 	std::vector<position> stonesColumn, stonesRow;
-	// max we can destroy is a entire row (8 elements) and half column (4 elements) or the opposite -> total of 12
+	// Max we can destroy is a entire row (GAME_GRID_SIZE_X elements) and 
+	// half column (GAME_GRID_SIZE_Y/2 elements) or the opposite -> total in this case 12
 	stonesColumn.reserve(GAME_GRID_SIZE_Y + GAME_GRID_SIZE_X * 0.5);
 	stonesRow.reserve(GAME_GRID_SIZE_X + GAME_GRID_SIZE_Y * 0.5);
 
@@ -127,7 +132,7 @@ std::vector<position> MinerSpeedGame::getStonesToDestroy(const int column, const
 	findStonesSameColorInColumn(stonesColumn, currentColor, column, row);
 	findStonesSameColorInRow(stonesRow, currentColor, column, row);
 	// nothing to do in these cases
-	if (stonesRow.size() == 0 && stonesColumn.size() == 0) {
+	if (stonesColumn.size() == 0 && stonesRow.size() == 0) {
 		return std::vector<position>();
 	}
 	// add initial point if other direction is empty
