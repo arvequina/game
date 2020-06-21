@@ -34,6 +34,8 @@ void MinerSpeedGame::maybeDispatchMouseEvents() {
 }
 
 void MinerSpeedGame::mouseDownEvent() {
+	// This could go in maybeDispatchMouseEvents() because
+	// you called it maybe.
 	if (!mEngine.GetMouseButtonDown()) {
 		return;
 	}
@@ -49,14 +51,15 @@ void MinerSpeedGame::mouseDownEvent() {
 		}
 		std::cout << "[DEBUG] BEGIN row/column :" << mRow << " - " << mColumn << std::endl;
 		mFirst = false;
-	} else { 
+	} else {
 		// DRAGGING scenario
 		// check mouse pos and intersection in the 8x8 grid and substract initial point
 		mPosEndX = mEngine.GetMouseX() - POS_BEGIN_X;
 		mPosEndY = mEngine.GetMouseY() - POS_BEGIN_Y;
 		// calculate column and row
 		int column = -1, row = -1;
-		if (mPosEndX > std::numeric_limits<float>::epsilon() && mPosEndY > std::numeric_limits<float>::epsilon() &&
+		if (mPosEndX > std::numeric_limits<float>::epsilon()&&
+		    mPosEndY > std::numeric_limits<float>::epsilon() &&
 		    mPosEndX < SCENE_SIZE && mPosEndY < SCENE_SIZE) {
 			column = static_cast<int>(mPosEndX) / STONE_SIZE;
 			row = static_cast<int>(mPosEndY) / STONE_SIZE;
@@ -71,6 +74,7 @@ void MinerSpeedGame::mouseDownEvent() {
 }
 
 void MinerSpeedGame::mouseUpEvent() {
+	// This if should go to maybeDispatchMouseEvents()
 	if (mEngine.GetMouseButtonUp()) {
 		mFirst = true;
 		mEngine.SetMouseButtonUp(false);
@@ -82,6 +86,9 @@ void MinerSpeedGame::mouseUpEvent() {
 }
 
 void MinerSpeedGame::swap(const int row, const int column) {
+	// this method would be clearer if it would take four arguments
+	// because mRow/mColumn are defined elsewhere...
+
 	// only allow row and column-wise moves
 	int swaped = false;
 	if (row >= 0 && abs(mRow - row) == 1) {
@@ -124,7 +131,7 @@ std::vector<position> MinerSpeedGame::getStonesToDestroy(const int row, const in
 	std::vector<position> stonesColumn, stonesRow;
 	// max we can destroy is a entire row (8 elements) and half column (4 elements) or the opposite -> total of 12
 	stonesColumn.reserve(12);
-	stonesRow.reserve(12);
+	stonesRow.reserve(12); // Use grid size to compute this 12
 
 	King::Engine::Texture currentColor = mEngine.getStoneColors()[row][column];
 	findStonesSameColorInColumn(stonesColumn, currentColor, row, column);
@@ -169,7 +176,7 @@ void MinerSpeedGame::findStonesSameColorInColumn(std::vector<position> &stones, 
 		}
 	}
 	// nothing to do if not found at least 2 stones of same color
-	if (stones.size() < 2) {
+	if (stones.size() < 2) { // use constant
 		stones.clear();
 	}
 }
@@ -201,7 +208,7 @@ void MinerSpeedGame::destroyAndFillStones(const std::vector<position> &vect) {
 	// first destroy all stones to be destroyed
 	for (auto nextPos : vect) {
 		// FIXME: try to add animation here somehow
-		destroyStone(nextPos);	
+		destroyStone(nextPos);
 	}
 	for (auto nextPos : vect) {
 		assignColorToDestroyedStones(nextPos.first, nextPos.second);
@@ -221,7 +228,7 @@ void MinerSpeedGame::assignColorToDestroyedStones(const int row, const int colum
 	// if cell already has a color -> check above
 	if (mEngine.getStoneColors()[row][column] != King::Engine::Texture::TEXTURE_EMPTY) {
 		assignColorToDestroyedStones(row - 1, column);
-		return; 
+		return;
 	}
 	// find stone above that is not empty
 	bool found = false;
