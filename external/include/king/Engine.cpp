@@ -1,6 +1,6 @@
 #include "Engine.h"
 
-#define GLM_FORCE_RADIANS 
+#define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
 #include <glew/glew.h>
 #include <glm/glm.hpp>
@@ -58,7 +58,7 @@ namespace King {
 		float mMouseY;
 		bool mMouseButtonDown;
 		bool mMouseButtonUp;
-		
+
 		EngineImplementation()
 			: mSdl(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_NOPARACHUTE)
 			, mSdlWindow(WindowWidth, WindowHeight)
@@ -273,7 +273,7 @@ namespace King {
 		// nested loop of 8 by 8 (low computing cost)
 		for (int row = 0; row < GAME_GRID_SIZE; ++row) {
 			for (int column = 0; column < GAME_GRID_SIZE; ++column) {
-				Render(mPimpl->mGameGrid->getStoneColors()[row][column], pos_x_ini + mPimpl->mGameGrid->getStonePositions()[row][column].first, 
+				Render(mPimpl->mGameGrid->getStoneColors()[row][column], pos_x_ini + mPimpl->mGameGrid->getStonePositions()[row][column].first,
 					                                pos_y_ini + mPimpl->mGameGrid->getStonePositions()[row][column].second);
 			}
 		}
@@ -342,7 +342,7 @@ namespace King {
 			glClear(GL_COLOR_BUFFER_BIT);
 
 			ParseEvents();
-			
+
 			float currentTicks = static_cast<float>(SDL_GetTicks());
 			float lastFrameTicks = currentTicks - mElapsedTicks;
 			mElapsedTicks = currentTicks;
@@ -416,12 +416,18 @@ namespace King {
 
 	void Engine::GameGrid::swapStoneColor(const int row, const int column, const int directionX, const int directionY) {
 		// check for writting/reading out of bounds
+
+		// I'm not sure mColors should be part of engine.
+		// mPositions, yes, becuase it's related to display.
+		// mColors could be part of the the game state, and passed here
+		// for rendering only.
+
 		if ((row + directionY >= 0 && column + directionX >= 0) &&
 			(row + directionY < GAME_GRID_SIZE && column + directionX < GAME_GRID_SIZE)) {
 			std::swap(mColors[row + directionY][column + directionX], mColors[row][column]);
 		}
 	}
-	
+
 	void Engine::GameGrid::setStoneColor(const int row, const int column, King::Engine::Texture color) {
 		// check for writting out of bounds
 		if (row >= 0 && row < GAME_GRID_SIZE && column >= 0 && column < GAME_GRID_SIZE) {
