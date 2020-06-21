@@ -29,11 +29,11 @@ void MinerSpeedGame::Update() {
 }
 
 void MinerSpeedGame::maybeDispatchMouseEvents() {
-	mouseDownEvent();
-	mouseUpEvent();
+	maybeDispatchMouseDownEvent();
+	maybeDispatchMouseUpEvent();
 }
 
-void MinerSpeedGame::mouseDownEvent() {
+void MinerSpeedGame::maybeDispatchMouseDownEvent() {
 	if (!mEngine.GetMouseButtonDown()) {
 		return;
 	}
@@ -48,27 +48,26 @@ void MinerSpeedGame::mouseDownEvent() {
 			mRow = static_cast<int>(mPosBeginY) / STONE_SIZE_Y;
 		}
 		mFirst = false;
-	} else { 
-		// DRAGGING scenario
+	} else { // DRAGGING scenario
 		// check mouse pos and intersection in the 8x8 grid and substract initial point
 		mPosEndX = mEngine.GetMouseX() - POS_BEGIN_X;
 		mPosEndY = mEngine.GetMouseY() - POS_BEGIN_Y;
-		// calculate column and row
-		int column = -1, row = -1;
-		if (mPosEndX > std::numeric_limits<float>::epsilon() && mPosEndY > std::numeric_limits<float>::epsilon() &&
+		// calculate endColumn and endRow
+		int endColumn = -1, endRow = -1;
+		if (mPosEndX > std::numeric_limits<float>::epsilon() && 
+			mPosEndY > std::numeric_limits<float>::epsilon() &&
 		    mPosEndX < SCENE_SIZE_X && mPosEndY < SCENE_SIZE_Y) {
-			column = static_cast<int>(mPosEndX) / STONE_SIZE_X;
-			row = static_cast<int>(mPosEndY) / STONE_SIZE_Y;
+			endColumn = static_cast<int>(mPosEndX) / STONE_SIZE_X;
+			endRow = static_cast<int>(mPosEndY) / STONE_SIZE_Y;
 		}
 		// check if swap is possible
-		if (row >-1 && column > -1 && mColumn > -1 && mRow > -1) {
-			// FIXME: not working properly
-			swap(column, row);
+		if (endColumn > -1 && endRow > -1 && mColumn > -1 && mRow > -1) {
+			swap(mColumn, mRow, endColumn, endRow);
 		}
 	}
 }
 
-void MinerSpeedGame::mouseUpEvent() {
+void MinerSpeedGame::maybeDispatchMouseUpEvent() {
 	if (mEngine.GetMouseButtonUp()) {
 		mFirst = true;
 		mEngine.SetMouseButtonUp(false);
@@ -79,33 +78,33 @@ void MinerSpeedGame::mouseUpEvent() {
 	}
 }
 
-void MinerSpeedGame::swap(const int column, const int row) {
+void MinerSpeedGame::swap(const int originColumn, const int originRow, const int endColumn, const int endRow) {
 	// only allow row and column-wise moves
 	int swaped = false;
-	if (row >= 0 && abs(mRow - row) == 1) {
+	if (endRow >= 0 && abs(originRow - endRow) == 1) {
 		swaped = true;
-		mEngine.swapStoneColor(mColumn, mRow, 0, row - mRow);
-	} else if (column >= 0 && abs(mColumn - column) == 1) {
+		mEngine.swapStoneColor(originColumn, originRow, 0, endRow - originRow);
+	} else if (endColumn >= 0 && abs(originColumn - endColumn) == 1) {
 		// if condition to do swap (3+ stones same color) then do swap
 		swaped = true;
-		mEngine.swapStoneColor(mColumn, mRow, column - mColumn, 0);
+		mEngine.swapStoneColor(originColumn, originRow, endColumn - originColumn, 0);
 	}
 
 	if (swaped) {
 		// just allow one swap
 		mEngine.SetMouseButtonDown(false);
 		// not allowed to swap same color stones
-		if (mEngine.getStoneColors()[mColumn][mRow] == mEngine.getStoneColors()[column][row]) {
+		if (mEngine.getStoneColors()[originColumn][originRow] == mEngine.getStoneColors()[endColumn][endRow]) {
 			return;
 		}
 		std::vector<position> destroyStonesOrigin, destroyStonesEnd;
-		destroyStonesOrigin = getStonesToDestroy(mColumn, mRow);
-		destroyStonesEnd    = getStonesToDestroy(column, row);
+		destroyStonesOrigin = getStonesToDestroy(originColumn, originRow);
+		destroyStonesEnd    = getStonesToDestroy(endColumn, endRow);
 		if (destroyStonesOrigin.size() != 0 || destroyStonesEnd.size() !=0) {
 			destroyAndFillStones(destroyStonesOrigin);
 			destroyAndFillStones(destroyStonesEnd);
 		} else { // put stones to original location if swap not possible
-			mEngine.swapStoneColor(mColumn, mRow, column - mColumn, row - mRow);
+			mEngine.swapStoneColor(originColumn, originRow, endColumn - originColumn, endRow - originRow);
 		}
 		bool moreStones = true;
 		while (moreStones) {
