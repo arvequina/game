@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <vector>
+#include <list>
 
 #define GLM_FORCE_RADIANS 
 #include <glm/gtc/matrix_transform.hpp>
@@ -37,15 +38,20 @@ namespace King {
 		void initialize();
 		const std::pair<float, float>(&getStonePositions() const)[8][8];
 		const King::Engine::Texture(&getStoneColors() const)[8][8];
+		const unsigned int getStoneActions(int,int);
+		unsigned int (&getStoneActionGrid())[8][8];
 		const bool(&getStoneVisited() const)[8][8];
 		void setStonePosition(const int row, const int column, const float mouseX, const float mouseY);
 		void swapStoneColor(const int row, const int column, const int directionX, const int directionY);
 		void setStoneColor(const int row, const int column, King::Engine::Texture color);
 		void setStoneVisited(const int row, const int column, bool visited);
+		std::list<King::Engine::actionsAnimation>* getAnimations();
 	private:
 		std::pair<float, float> mPositions[8][8];
 		King::Engine::Texture mColors[8][8];
+		unsigned int mStonesActions[8][8];
 		bool mVisited[8][8];
+		std::list<King::Engine::actionsAnimation> mAnimations;
 
 	};
 
@@ -280,8 +286,14 @@ namespace King {
 		// nested loop of 8 by 8 (low computing cost)
 		for (int row = 0; row < 8; ++row) {
 			for (int column = 0; column < 8; ++column) {
-				Render(mPimpl->mGameGrid->getStoneColors()[row][column], pos_x_ini + mPimpl->mGameGrid->getStonePositions()[row][column].first, 
-					                                pos_y_ini + mPimpl->mGameGrid->getStonePositions()[row][column].second);
+				if (mPimpl->mGameGrid->getStoneActions(row, column) == 0) {// nothing is going on so just do the regular render
+					Render(mPimpl->mGameGrid->getStoneColors()[row][column], pos_x_ini + mPimpl->mGameGrid->getStonePositions()[row][column].first,
+						pos_y_ini + mPimpl->mGameGrid->getStonePositions()[row][column].second);
+				}
+				else { // stuff is going on so render empty
+					Render(King::Engine::Texture::TEXTURE_EMPTY, pos_x_ini + mPimpl->mGameGrid->getStonePositions()[row][column].first,
+						pos_y_ini + mPimpl->mGameGrid->getStonePositions()[row][column].second);
+				}
 			}
 		}
 
@@ -289,6 +301,60 @@ namespace King {
 		int timeLeftInt = static_cast<int>(timeLeft);
 		Write("Time Left", 50.0f, 390.0f);
 		Write(std::to_string(timeLeftInt).c_str(), 100.0f, 420.0f);
+
+		doAnimations();
+	}
+	void Engine::doAnimations() {
+		std::list<King::Engine::actionsAnimation> *actions = mPimpl->mGameGrid->getAnimations();
+		Uint32 currentTick = SDL_GetTicks();
+		if (actions->size() > 0) {
+	
+			for (auto action: *actions) {
+				//King::Engine::actionsAnimation action = actions->front();
+				if (currentTick - action.startTime >= 500) { // animation done
+					mPimpl->mGameGrid->getStoneActionGrid()[action.row][action.column]--;
+					actions->pop_front();
+				}
+				else { // do animation
+					float pos_x_ini = 330.0f;
+					float pos_y_ini = 100.0f;
+					float timeRemaining = 500 - (currentTick - action.startTime);
+					float offsetAnimation = timeRemaining * 43.f / 500.0f;
+					switch (action.action)
+					{
+					case Engine::ActionsFromGestures::From_Down:
+						pos_y_ini += offsetAnimation;
+						break;
+					case Engine::ActionsFromGestures::From_Up:
+						pos_y_ini -= offsetAnimation;
+						break;
+					case Engine::ActionsFromGestures::From_Left:
+						std::cout << "from left" << "from right";
+						pos_x_ini += offsetAnimation;
+						break;
+					case Engine::ActionsFromGestures::From_Right:
+						pos_x_ini -= offsetAnimation;
+						break;
+					}
+					Render(action.incomingColor, pos_x_ini + mPimpl->mGameGrid->getStonePositions()[action.row][action.column].first,
+						pos_y_ini + mPimpl->mGameGrid->getStonePositions()[action.row][action.column].second);
+				}
+			}
+		}
+	}
+
+	void Engine::addAction(const int row, const int column, const ActionsFromGestures actionGesture,const King::Engine::Texture color)
+	{
+		std::list<King::Engine::actionsAnimation> *actions = mPimpl->mGameGrid->getAnimations();
+		King::Engine::actionsAnimation action;
+		action.action = actionGesture;
+		action.row = row;
+		action.column = column;
+		action.incomingColor = color;
+		action.startTime = SDL_GetTicks();
+		mPimpl->mGameGrid->getStoneActionGrid()[row][column]++;
+		actions->push_back(action);
+
 	}
 
 	void Engine::gameOverScene() {
@@ -400,6 +466,7 @@ namespace King {
 		float posX = pos_x_ini, posY = pos_y_ini;
 		for (int row = 0; row < 8; ++row) {
 			for (int column = 0; column < 8; ++column) {
+				mStonesActions[row][column] = 0;
 				mPositions[row][column].first = posX + column * pos_increment;
 				mPositions[row][column].second = posY + row * pos_increment;
 				
@@ -446,6 +513,16 @@ namespace King {
 		return mColors;
 	}
 
+		const unsigned int Engine::GameGrid::getStoneActions(int row, int col)
+	{
+		return mStonesActions[row][col];
+	}
+
+	unsigned int(&Engine::GameGrid::getStoneActionGrid())[8][8]
+	{
+		return mStonesActions;
+	}
+
 	const bool(&Engine::GameGrid::getStoneVisited() const)[8][8]
 	{
 		return mVisited;
@@ -457,6 +534,11 @@ namespace King {
 		if (row >= 0 && row < 8 && column >= 0 && column < 8) {
 			mVisited[row][column] = visited;
 		}
+	}
+
+	std::list<King::Engine::actionsAnimation>* Engine::GameGrid::getAnimations()
+	{
+		return &mAnimations;
 	}
 
 }

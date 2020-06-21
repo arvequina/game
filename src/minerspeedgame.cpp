@@ -111,36 +111,31 @@ void MinerSpeedGame::swap(const int row, const int column) {
 	// only allow row and column-wise moves
 	std::vector<std::vector<position>*> *combinations = new std::vector<std::vector<position>*>();
 	int swaped = false;
+	King::Engine::ActionsFromGestures actionOne, actionTwo;
 	if (row >= 0 && abs(mRow - row) == 1) {
 		swaped = true;
 		mEngine.swapStoneColor(mRow, mColumn, 0, row - mRow);
-		/*combinations = scan();
-		if (combinations->empty()) {
-			// revert swap
-			mEngine.swapStoneColor(mRow, mColumn, 0, row - mRow);
+		if (mRow - row > 0) {
+			actionOne = King::Engine::ActionsFromGestures::From_Down;
+			actionTwo = King::Engine::ActionsFromGestures::From_Up;
 		}
 		else {
-			// remove stones and collapse
-			while (!combinations->empty()) {
-				std::vector<position>* combination = combinations->back();
-				combinations->pop_back();
-				for (std::vector<position>::iterator it = combination->begin(); it != combination->end(); ++it) {
-					std::cout << "[DEBUG] iterator : " << it->first << std::endl;
-					mEngine.setStoneColor(it->first, it->second, King::Engine::Texture::TEXTURE_EMPTY);
-				}
-			}
-			// reorganize and fill empty slots
-			mEngine.fillScene(mTimeLeft); // tmp function
-			// once full grid call scan again to check combinations
-            // ...
+			actionOne = King::Engine::ActionsFromGestures::From_Up;
+			actionTwo = King::Engine::ActionsFromGestures::From_Down;
 		}
-		// just allow one swap
-		mEngine.SetMouseButtonDown(false);*/
 	}
 	else if (column >= 0 && abs(mColumn - column) == 1) {
 		// if condition to do swap (3+ stones same color) then do swap
 		swaped = true;
 		mEngine.swapStoneColor(mRow, mColumn, column - mColumn, 0);
+		if (mColumn - column > 0) {
+			actionOne = King::Engine::ActionsFromGestures::From_Left;
+			actionTwo = King::Engine::ActionsFromGestures::From_Right;
+		}
+		else {
+			actionOne = King::Engine::ActionsFromGestures::From_Right;
+			actionTwo = King::Engine::ActionsFromGestures::From_Left;
+		}
 	}
 
 	if (swaped) {
@@ -151,7 +146,11 @@ void MinerSpeedGame::swap(const int row, const int column) {
 			return;
 		}
 
-		std::cout << "waped " << mRow << mColumn << "," << row << column;
+		mEngine.addAction(row, column, actionOne, mEngine.getStoneColors()[row][column]);
+		mEngine.addAction(mRow, mColumn, actionTwo, mEngine.getStoneColors()[mRow][mColumn]);
+
+
+		std::cout << "swaped " << mRow << mColumn << "," << row << column;
 
 		std::vector<std::pair<int, int>> destroyedStones1,destroyedStones2;
 		destroyedStones1 = destroyStones(mRow, mColumn);
@@ -164,6 +163,7 @@ void MinerSpeedGame::swap(const int row, const int column) {
 		}
 		else { // put them back
 			mEngine.swapStoneColor(mRow, mColumn, column - mColumn, row - mRow);
+
 		}
 
 

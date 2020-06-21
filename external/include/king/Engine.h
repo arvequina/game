@@ -20,6 +20,21 @@ namespace King {
 			TEXTURE_MAX
 		};
 
+		enum ActionsFromGestures {
+			From_Down,
+			From_Up,
+			From_Left,
+			From_Right
+		};
+
+		typedef struct{
+			int row;
+			int column;
+			ActionsFromGestures action;
+			Texture incomingColor;
+			unsigned int startTime;
+		} actionsAnimation;
+
 		Engine(const char* assetsDirectory);
 		~Engine();
 
@@ -46,6 +61,8 @@ namespace King {
 		void Write(const char* text, float x, float y, float rotation = 0.0f);
 
 		void fillScene(float timeLeft);
+		void doAnimations();
+		void addAction(const int row, const int column, const ActionsFromGestures action, const King::Engine::Texture color);
 		void gameOverScene();
 		void initializeGrid() const;
 		float getCurrentTime() const;
