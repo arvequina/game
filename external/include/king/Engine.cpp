@@ -311,15 +311,18 @@ namespace King {
 	
 			for (auto action: *actions) {
 				//King::Engine::actionsAnimation action = actions->front();
-				if (currentTick - action.startTime >= 500) { // animation done
+				if (action.delay > currentTick - action.startTime) { // not yet
+					continue;
+				}
+				if (currentTick - action.startTime >= animationsMaxTime + action.delay) { // animation done
 					mPimpl->mGameGrid->getStoneActionGrid()[action.row][action.column]--;
 					actions->pop_front();
 				}
 				else { // do animation
 					float pos_x_ini = 330.0f;
 					float pos_y_ini = 100.0f;
-					float timeRemaining = 500 - (currentTick - action.startTime);
-					float offsetAnimation = timeRemaining * 43.f / 500.0f;
+					float timeRemaining = animationsMaxTime  - (currentTick - action.startTime- action.delay);
+					float offsetAnimation = timeRemaining * 43.f / animationsMaxTime;
 					switch (action.action)
 					{
 					case Engine::ActionsFromGestures::From_Down:
@@ -343,7 +346,7 @@ namespace King {
 		}
 	}
 
-	void Engine::addAction(const int row, const int column, const ActionsFromGestures actionGesture,const King::Engine::Texture color)
+	void Engine::addAction(const int row, const int column, const ActionsFromGestures actionGesture,const King::Engine::Texture color,int delay)
 	{
 		std::list<King::Engine::actionsAnimation> *actions = mPimpl->mGameGrid->getAnimations();
 		King::Engine::actionsAnimation action;
@@ -352,6 +355,7 @@ namespace King {
 		action.column = column;
 		action.incomingColor = color;
 		action.startTime = SDL_GetTicks();
+		action.delay = delay;
 		mPimpl->mGameGrid->getStoneActionGrid()[row][column]++;
 		actions->push_back(action);
 

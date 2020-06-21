@@ -163,7 +163,8 @@ void MinerSpeedGame::swap(const int row, const int column) {
 		}
 		else { // put them back
 			mEngine.swapStoneColor(mRow, mColumn, column - mColumn, row - mRow);
-
+			mEngine.addAction(row, column, actionOne, mEngine.getStoneColors()[row][column], animationsMaxTime);
+			mEngine.addAction(mRow, mColumn, actionTwo, mEngine.getStoneColors()[mRow][mColumn], animationsMaxTime);
 		}
 
 

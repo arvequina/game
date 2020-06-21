@@ -5,6 +5,8 @@
 #include <glm/fwd.hpp>
 #include <memory>
 
+#define animationsMaxTime 250
+
 namespace King {
 	class Updater;
 	class Engine {
@@ -33,6 +35,7 @@ namespace King {
 			ActionsFromGestures action;
 			Texture incomingColor;
 			unsigned int startTime;
+			int delay;
 		} actionsAnimation;
 
 		Engine(const char* assetsDirectory);
@@ -62,7 +65,7 @@ namespace King {
 
 		void fillScene(float timeLeft);
 		void doAnimations();
-		void addAction(const int row, const int column, const ActionsFromGestures action, const King::Engine::Texture color);
+		void addAction(const int row, const int column, const ActionsFromGestures action, const King::Engine::Texture color, int delay = 0);
 		void gameOverScene();
 		void initializeGrid() const;
 		float getCurrentTime() const;
