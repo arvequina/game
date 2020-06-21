@@ -2,7 +2,7 @@
 #include <glm/fwd.hpp>
 #include <memory>
 
-// help template class for positions (float) and index position (int)
+// help template class for positions (float) and index positions (int)
 template <class T> 
 class position {
 public:
@@ -75,7 +75,6 @@ namespace King {
 		void Write(const char* text, const glm::mat4& transform);
 		void Write(const char* text, float x, float y, float rotation = 0.0f);
 
-		
 		bool isTimeOver();
 		void waitFor(float waitTime) const;
 		float getCurrentTime() const;
