@@ -32,14 +32,14 @@ namespace King {
 			initialize();
 		}
 		void initialize();
-		const positionF(&getStonePositions() const)[GAME_GRID_SIZE][GAME_GRID_SIZE];
-		const King::Engine::Texture(&getStoneColors() const)[GAME_GRID_SIZE][GAME_GRID_SIZE];
-		void setStonePosition(const int row, const int column, const float mouseX, const float mouseY);
-		void swapStoneColor(const int row, const int column, const int directionX, const int directionY);
-		void setStoneColor(const int row, const int column, King::Engine::Texture color);
+		const positionF(&getStonePositions() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
+		const King::Engine::Texture(&getStoneColors() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
+		void setStonePosition(const int column, const int row, const float mouseX, const float mouseY);
+		void swapStoneColor(const int column, const int row, const int directionX, const int directionY);
+		void setStoneColor(const int column, const int row, King::Engine::Texture color);
 	private:
-		positionF mPositions[GAME_GRID_SIZE][GAME_GRID_SIZE];
-		King::Engine::Texture mColors[GAME_GRID_SIZE][GAME_GRID_SIZE];
+		positionF mPositions[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
+		King::Engine::Texture mColors[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
 	};
 
 	struct Engine::EngineImplementation {
@@ -269,12 +269,12 @@ namespace King {
 	void Engine::fillScene() {
 		Render(King::Engine::TEXTURE_BACKGROUND, 0.0f, 0.0f);
 		const float pos_x_ini = POS_BEGIN_X;
-		const float pos_y_ini = POS_BEGIN_Y;
+		const float pos_y_ini = POS_BEGIN_Y + OFFSET_RENDER;
 		// nested loop of 8 by 8 (low computing cost)
-		for (int row = 0; row < GAME_GRID_SIZE; ++row) {
-			for (int column = 0; column < GAME_GRID_SIZE; ++column) {
-				Render(mPimpl->mGameGrid->getStoneColors()[row][column], pos_x_ini + mPimpl->mGameGrid->getStonePositions()[row][column].first, 
-					                                pos_y_ini + mPimpl->mGameGrid->getStonePositions()[row][column].second);
+		for (int row = 0; row < GAME_GRID_SIZE_Y; ++row) {
+			for (int column = 0; column < GAME_GRID_SIZE_X; ++column) {
+				Render(mPimpl->mGameGrid->getStoneColors()[column][row], pos_x_ini + mPimpl->mGameGrid->getStonePositions()[column][row].first,
+					                                pos_y_ini + mPimpl->mGameGrid->getStonePositions()[column][row].second);
 			}
 		}
 		printTimeLeft();
@@ -312,23 +312,23 @@ namespace King {
 		while ((getCurrentTime() - initialTime)*0.001f < GAME_OVER_WAIT_TIME) {}
 	}
 
-	void Engine::setStonePosition(const int row, const int column, const float mouseX, const float mouseY) {
-		mPimpl->mGameGrid->setStonePosition(row, column, mouseX, mouseY);
+	void Engine::setStonePosition(const int column, const int row, const float mouseX, const float mouseY) {
+		mPimpl->mGameGrid->setStonePosition(column, row, mouseX, mouseY);
 	}
 
-	const positionF(&Engine::getStonePositions() const)[GAME_GRID_SIZE][GAME_GRID_SIZE] {
+	const positionF(&Engine::getStonePositions() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y] {
 		return mPimpl->mGameGrid->getStonePositions();
 	}
 
-	void Engine::swapStoneColor(const int row, const int column, const int directionX, const int directionY) {
-		mPimpl->mGameGrid->swapStoneColor(row, column, directionX, directionY);
+	void Engine::swapStoneColor(const int column, const int row, const int directionX, const int directionY) {
+		mPimpl->mGameGrid->swapStoneColor(column, row, directionX, directionY);
 	}
 
-	void Engine::setStoneColor(const int row, const int column, King::Engine::Texture color) {
-		mPimpl->mGameGrid->setStoneColor(row, column, color);
+	void Engine::setStoneColor(const int column, const int row, King::Engine::Texture color) {
+		mPimpl->mGameGrid->setStoneColor(column, row, color);
 	}
 
-	const King::Engine::Texture(&Engine::getStoneColors() const)[GAME_GRID_SIZE][GAME_GRID_SIZE] {
+	const King::Engine::Texture(&Engine::getStoneColors() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y] {
 		return mPimpl->mGameGrid->getStoneColors();
 	}
 
@@ -387,49 +387,48 @@ namespace King {
 	}
 
 	void Engine::GameGrid::initialize() {
-		const float pos_increment = STONE_SIZE;
 		int column = 0, row = 0;
 		float posX = 0.0f, posY = 0.0f;
 		std::srand(time(0));
 		// nested loop for small grid 8x8
-		for (int row = 0; row < GAME_GRID_SIZE; ++row) {
-			for (int column = 0; column < GAME_GRID_SIZE; ++column) {
-				mPositions[row][column].first = posX + column * pos_increment;
-				mPositions[row][column].second = posY + row * pos_increment;
+		for (int row = 0; row < GAME_GRID_SIZE_Y; ++row) {
+			for (int column = 0; column < GAME_GRID_SIZE_X; ++column) {
+				mPositions[column][row].first = posX + column * STONE_SIZE_X;
+				mPositions[column][row].second = posY + row * STONE_SIZE_Y;
 				King::Engine::Texture color = getRandomStoneColor();
-			    while ((row >= 2 && mColors[row - 1][column] == color && mColors[row - 2][column] == color) ||
-					   (column >= 2 && mColors[row][column - 1] == color && mColors[row][column - 2] == color)) {
+			    while ((row >= 2 && mColors[column][row - 1] == color && mColors[column][row - 2] == color) ||
+					   (column >= 2 && mColors[column - 1][row] == color && mColors[column - 2][row] == color)) {
 					color = getRandomStoneColor();
 				}
-				mColors[row][column] = color;
+				mColors[column][row] = color;
 			}
 		}
 	}
 
-	void Engine::GameGrid::setStonePosition(const int row, const int column, const float mouseX, const float mouseY) {
-		mPositions[row][column] = positionF(mouseX, mouseY);
+	void Engine::GameGrid::setStonePosition(const int column, const int row, const float mouseX, const float mouseY) {
+		mPositions[column][row] = positionF(mouseX, mouseY);
 	}
 
-	const positionF(&Engine::GameGrid::getStonePositions() const)[GAME_GRID_SIZE][GAME_GRID_SIZE] {
+	const positionF(&Engine::GameGrid::getStonePositions() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y] {
 		return mPositions;
 	}
 
-	void Engine::GameGrid::swapStoneColor(const int row, const int column, const int directionX, const int directionY) {
+	void Engine::GameGrid::swapStoneColor(const int column, const int row, const int directionX, const int directionY) {
 		// check for writting/reading out of bounds
 		if ((row + directionY >= 0 && column + directionX >= 0) &&
-			(row + directionY < GAME_GRID_SIZE && column + directionX < GAME_GRID_SIZE)) {
-			std::swap(mColors[row + directionY][column + directionX], mColors[row][column]);
+			(row + directionY < GAME_GRID_SIZE_X && column + directionX < GAME_GRID_SIZE_Y)) {
+			std::swap(mColors[column + directionX][row + directionY], mColors[column][row]);
 		}
 	}
 	
-	void Engine::GameGrid::setStoneColor(const int row, const int column, King::Engine::Texture color) {
+	void Engine::GameGrid::setStoneColor(const int column, const int row, King::Engine::Texture color) {
 		// check for writting out of bounds
-		if (row >= 0 && row < GAME_GRID_SIZE && column >= 0 && column < GAME_GRID_SIZE) {
-			mColors[row][column] = color;
+		if (row >= 0 && row < GAME_GRID_SIZE_Y && column >= 0 && column < GAME_GRID_SIZE_X) {
+			mColors[column][row] = color;
 		}
 	}
 
-	const King::Engine::Texture(&Engine::GameGrid::getStoneColors() const)[GAME_GRID_SIZE][GAME_GRID_SIZE] {
+	const King::Engine::Texture(&Engine::GameGrid::getStoneColors() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y] {
 		return mColors;
 	}
 }
