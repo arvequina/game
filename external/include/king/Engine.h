@@ -21,7 +21,7 @@ constexpr auto GAME_GRID_SIZE_X = 8;
 constexpr auto GAME_GRID_SIZE_Y = 8;
 constexpr auto SCENE_SIZE_X = STONE_SIZE_X * GAME_GRID_SIZE_X;
 constexpr auto SCENE_SIZE_Y = STONE_SIZE_Y * GAME_GRID_SIZE_Y;
-constexpr auto MAX_GAME_TIME = 600.0f;
+constexpr auto MAX_GAME_TIME = 60.0f;
 constexpr auto GAME_OVER_WAIT_TIME = 3.0f;
 constexpr auto FPS = 60.0f;
 
