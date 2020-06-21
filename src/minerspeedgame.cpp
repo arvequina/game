@@ -13,32 +13,18 @@ MinerSpeedGame::MinerSpeedGame()
 {}
 
 void MinerSpeedGame::Start() {
-	//mEngine->initContollers();
 	mEngine.initGame();
-	initializeTimer();
 	mEngine.Start(*this);
 }
 
-void MinerSpeedGame::initializeTimer() {
-	mStartTime = mEngine.getCurrentTime();
-}
-
-bool MinerSpeedGame::isTimeOver() {
-	mTimeLeft =  MAX_GAME_TIME - (mEngine.getCurrentTime() - mStartTime)* 0.001f;
-	if (mTimeLeft < 0.0f) {
-		return true;
-	}
-	return false;
-}
-
 void MinerSpeedGame::Update() {
-	if (isTimeOver()) {
+	if (mEngine.isTimeOver()) {
 		//end game
 		mEngine.gameOverScene();
 		return;
 	}
 	// fill scene with all elements
-	mEngine.fillScene(mTimeLeft);
+	mEngine.fillScene();
 	maybeDispatchMouseEvents();
 }
 

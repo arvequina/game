@@ -1,15 +1,12 @@
 #define GLM_FORCE_RADIANS 
 
-#include <king/Engine.h>
-#include <king/Updater.h>
-
-
-#include "iostream"
-#include "list"
+#include <iostream>
+#include <list>
 #include <algorithm>
 #include <vector>
 
-typedef std::pair<int, int> position;
+#include "king/Engine.h"
+#include "king/Updater.h"
 
 //**********************************************************************
 class MinerSpeedGame : public King::Updater {
@@ -32,8 +29,6 @@ private:
 	void assignColorToDestroyedStones(const int row, const int column);
 	void destroyStone(const position& pos);
 	std::vector<position> moreStonesToDestroy();
-	void initializeTimer();
-	bool isTimeOver();
 	King::Engine mEngine;
 	float mRotation;
 	float mPosBeginX;

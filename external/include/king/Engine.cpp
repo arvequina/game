@@ -1,9 +1,5 @@
 #include "Engine.h"
 
-#include <stdexcept>
-#include <algorithm>
-#include <vector>
-
 #define GLM_FORCE_RADIANS 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glew/glew.h>
@@ -12,6 +8,9 @@
 #include <iostream>
 #include <string>
 #include <time.h>
+#include <stdexcept>
+#include <algorithm>
+#include <vector>
 
 #include "Font.h"
 #include "GlContext.h"
@@ -33,13 +32,13 @@ namespace King {
 			initialize();
 		}
 		void initialize();
-		const std::pair<float, float>(&getStonePositions() const)[GAME_GRID_SIZE][GAME_GRID_SIZE];
+		const positionF(&getStonePositions() const)[GAME_GRID_SIZE][GAME_GRID_SIZE];
 		const King::Engine::Texture(&getStoneColors() const)[GAME_GRID_SIZE][GAME_GRID_SIZE];
 		void setStonePosition(const int row, const int column, const float mouseX, const float mouseY);
 		void swapStoneColor(const int row, const int column, const int directionX, const int directionY);
 		void setStoneColor(const int row, const int column, King::Engine::Texture color);
 	private:
-		std::pair<float, float> mPositions[GAME_GRID_SIZE][GAME_GRID_SIZE];
+		positionF mPositions[GAME_GRID_SIZE][GAME_GRID_SIZE];
 		King::Engine::Texture mColors[GAME_GRID_SIZE][GAME_GRID_SIZE];
 	};
 
@@ -154,7 +153,8 @@ namespace King {
 	}
 
 	void Engine::initGame() {
-		initializeGrid();
+		initializeGameGrid();
+		initializeTimer();
 	}
 
 	void Engine::Start(Updater& updater) {
@@ -258,7 +258,7 @@ namespace King {
 		return WindowHeight;
 	}
 
-	void Engine::initializeGrid() const {
+	void Engine::initializeGameGrid() const {
 		mPimpl->mGameGrid->initialize();
 	}
 
@@ -266,7 +266,7 @@ namespace King {
 		return static_cast<float>(SDL_GetTicks());
 	}
 
-	void Engine::fillScene(float timeLeft) {
+	void Engine::fillScene() {
 		Render(King::Engine::TEXTURE_BACKGROUND, 0.0f, 0.0f);
 		const float pos_x_ini = POS_BEGIN_X;
 		const float pos_y_ini = POS_BEGIN_Y;
@@ -277,24 +277,46 @@ namespace King {
 					                                pos_y_ini + mPimpl->mGameGrid->getStonePositions()[row][column].second);
 			}
 		}
-		int timeLeftInt = static_cast<int>(timeLeft);
-		Write("Time Left", 50.0f, 390.0f);
-		Write(std::to_string(timeLeftInt).c_str(), 100.0f, 420.0f);
+		printTimeLeft();
+	}
+
+	void Engine::printTimeLeft() {
+		if (mTimeLeft < 0.01f) {
+			Write("Game over", POS_TIME_LEFT_TEXT_X, POS_TIME_LEFT_TEXT_Y);
+		} else {
+			Write("Time Left", POS_TIME_LEFT_TEXT_X, POS_TIME_LEFT_TEXT_Y);
+			Write(std::to_string(static_cast<int>(mTimeLeft)).c_str(), POS_TIME_LEFT_NUM_X, POS_TIME_LEFT_NUM_Y);
+		}
+	}
+
+	void Engine::initializeTimer() {
+		mStartTime = getCurrentTime();
+	}
+
+	bool Engine::isTimeOver() {
+		mTimeLeft = MAX_GAME_TIME - (getCurrentTime() - mStartTime)* 0.001f;
+		if (mTimeLeft < 0.0f) {
+			return true;
+		}
+		return false;
 	}
 
 	void Engine::gameOverScene() {
-		float initialTime = getCurrentTime();
-		//wait 3 seconds
-		while ((getCurrentTime() - initialTime)*0.001f < 3.0f) {}
+		waitFor(GAME_OVER_WAIT_TIME);
 		// bye!
 		Quit();
+	}
+
+	void Engine::waitFor(float waitTime) const {
+		float initialTime = getCurrentTime();
+		while ((getCurrentTime() - initialTime)*0.001f < GAME_OVER_WAIT_TIME) {}
 	}
 
 	void Engine::setStonePosition(const int row, const int column, const float mouseX, const float mouseY) {
 		mPimpl->mGameGrid->setStonePosition(row, column, mouseX, mouseY);
 	}
 
-	const std::pair<float, float>(&Engine::getStonePositions() const)[GAME_GRID_SIZE][GAME_GRID_SIZE] {
+	const positionF(&Engine::getStonePositions() const)[GAME_GRID_SIZE][GAME_GRID_SIZE] {
 		return mPimpl->mGameGrid->getStonePositions();
 	}
 
@@ -385,10 +407,10 @@ namespace King {
 	}
 
 	void Engine::GameGrid::setStonePosition(const int row, const int column, const float mouseX, const float mouseY) {
-		mPositions[row][column] = std::pair<float, float>(mouseX, mouseY);
+		mPositions[row][column] = positionF(mouseX, mouseY);
 	}
 
-	const std::pair<float, float>(&Engine::GameGrid::getStonePositions() const)[8][8] {
+	const positionF(&Engine::GameGrid::getStonePositions() const)[GAME_GRID_SIZE][GAME_GRID_SIZE] {
 		return mPositions;
 	}
 
