@@ -32,13 +32,13 @@ namespace King {
 			initialize();
 		}
 		void initialize();
-		const positionF(&getStonePositions() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
+		const position<float>(&getStonePositions() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
 		const King::Engine::Texture(&getStoneColors() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
 		void setStonePosition(const int column, const int row, const float mouseX, const float mouseY);
 		void swapStoneColor(const int column, const int row, const int directionX, const int directionY);
 		void setStoneColor(const int column, const int row, King::Engine::Texture color);
 	private:
-		positionF mPositions[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
+		position<float> mPositions[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
 		King::Engine::Texture mColors[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
 	};
 
@@ -273,8 +273,8 @@ namespace King {
 		// nested loop of 8 by 8 (low computing cost)
 		for (int row = 0; row < GAME_GRID_SIZE_Y; ++row) {
 			for (int column = 0; column < GAME_GRID_SIZE_X; ++column) {
-				Render(mPimpl->mGameGrid->getStoneColors()[column][row], pos_x_ini + mPimpl->mGameGrid->getStonePositions()[column][row].first,
-					                                pos_y_ini + mPimpl->mGameGrid->getStonePositions()[column][row].second);
+				Render(mPimpl->mGameGrid->getStoneColors()[column][row], pos_x_ini + mPimpl->mGameGrid->getStonePositions()[column][row].column,
+					                                pos_y_ini + mPimpl->mGameGrid->getStonePositions()[column][row].row);
 			}
 		}
 		printTimeLeft();
@@ -316,7 +316,7 @@ namespace King {
 		mPimpl->mGameGrid->setStonePosition(column, row, mouseX, mouseY);
 	}
 
-	const positionF(&Engine::getStonePositions() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y] {
+	const position<float>(&Engine::getStonePositions() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y] {
 		return mPimpl->mGameGrid->getStonePositions();
 	}
 
@@ -393,8 +393,8 @@ namespace King {
 		// nested loop for small grid 8x8
 		for (int row = 0; row < GAME_GRID_SIZE_Y; ++row) {
 			for (int column = 0; column < GAME_GRID_SIZE_X; ++column) {
-				mPositions[column][row].first = posX + column * STONE_SIZE_X;
-				mPositions[column][row].second = posY + row * STONE_SIZE_Y;
+				mPositions[column][row].column = posX + column * STONE_SIZE_X;
+				mPositions[column][row].row = posY + row * STONE_SIZE_Y;
 				King::Engine::Texture color = getRandomStoneColor();
 			    while ((row >= 2 && mColors[column][row - 1] == color && mColors[column][row - 2] == color) ||
 					   (column >= 2 && mColors[column - 1][row] == color && mColors[column - 2][row] == color)) {
@@ -406,10 +406,10 @@ namespace King {
 	}
 
 	void Engine::GameGrid::setStonePosition(const int column, const int row, const float mouseX, const float mouseY) {
-		mPositions[column][row] = positionF(mouseX, mouseY);
+		mPositions[column][row] = position<float>(mouseX, mouseY);
 	}
 
-	const positionF(&Engine::GameGrid::getStonePositions() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y] {
+	const position<float>(&Engine::GameGrid::getStonePositions() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y] {
 		return mPositions;
 	}
 

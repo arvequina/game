@@ -2,8 +2,15 @@
 #include <glm/fwd.hpp>
 #include <memory>
 
-typedef std::pair<int, int> position;
-typedef std::pair<float, float> positionF;
+// help template class for positions (float) and index position (int)
+template <class T> 
+class position {
+public:
+	position() : column(static_cast<T>(-1)), row(static_cast<T>(-1)) {}
+	position(T newCol, T newRow) { column = newCol; row = newRow; }
+	T column;
+	T row;
+};
 
 constexpr auto WINDOW_WITDH = 755;
 constexpr auto WINDOW_HEIGHT = 600;
@@ -75,7 +82,7 @@ namespace King {
 		void printTimeLeft();
 
 		void setStonePosition(const int column, const int row, const float mouseX, const float mouseY);
-		const positionF(&getStonePositions() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
+		const position<float>(&getStonePositions() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
 		void swapStoneColor(const int column, const int row, const int directionX, const int directionY);
 		void setStoneColor(const int column, const int row, King::Engine::Texture color);
 		const King::Engine::Texture(&getStoneColors() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
