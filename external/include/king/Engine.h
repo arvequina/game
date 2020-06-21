@@ -16,6 +16,7 @@ constexpr auto POS_TIME_LEFT_NUM_Y = 420.0f;
 constexpr auto OFFSET_RENDER = 25.0f;
 constexpr auto STONE_SIZE_X = 43;
 constexpr auto STONE_SIZE_Y = 43;
+constexpr auto MIN_STONES_COMBO = 3;
 constexpr auto GAME_GRID_SIZE_X = 8;
 constexpr auto GAME_GRID_SIZE_Y = 8;
 constexpr auto SCENE_SIZE_X = STONE_SIZE_X * GAME_GRID_SIZE_X;

@@ -121,8 +121,8 @@ void MinerSpeedGame::swap(const int column, const int row) {
 std::vector<position> MinerSpeedGame::getStonesToDestroy(const int column, const int row) {
 	std::vector<position> stonesColumn, stonesRow;
 	// max we can destroy is a entire row (8 elements) and half column (4 elements) or the opposite -> total of 12
-	stonesColumn.reserve(12);
-	stonesRow.reserve(12);
+	stonesColumn.reserve(GAME_GRID_SIZE_Y + GAME_GRID_SIZE_X * 0.5);
+	stonesRow.reserve(GAME_GRID_SIZE_X + GAME_GRID_SIZE_Y * 0.5);
 
 	King::Engine::Texture currentColor = mEngine.getStoneColors()[column][row];
 	findStonesSameColorInColumn(stonesColumn, currentColor, column, row);
@@ -167,7 +167,7 @@ void MinerSpeedGame::findStonesSameColorInColumn(std::vector<position> &stones, 
 		}
 	}
 	// nothing to do if not found at least 2 stones of same color
-	if (stones.size() < 2) {
+	if (stones.size() < MIN_STONES_COMBO - 1) {
 		stones.clear();
 	}
 }
@@ -190,7 +190,7 @@ void MinerSpeedGame::findStonesSameColorInRow(std::vector<position> &stones, Kin
 		}
 	}
 	// nothing to do if not found at least 2 stones of same color
-	if (stones.size() < 2) {
+	if (stones.size() < MIN_STONES_COMBO - 1) {
 		stones.clear();
 	}
 }
