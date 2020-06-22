@@ -7,15 +7,18 @@
 
 #include "king/Engine.h"
 #include "king/Updater.h"
+#include "common.h"
+#include "animation.h"
 
 typedef std::vector<position<int>> vectorOfPositions;
-typedef std::pair<King::Engine::ActionsFromGestures, King::Engine::ActionsFromGestures> pairOfActions;
+typedef std::pair<ActionFromGesture, ActionFromGesture> pairOfActions;
 
 //**********************************************************************
 class MinerSpeedGame : public King::Updater {
 public:
 	MinerSpeedGame();
 	~MinerSpeedGame();
+	void Initialize();
 	void Start();
 	void Update();
 
@@ -30,8 +33,8 @@ private:
 	void destroyAndFillStones(const vectorOfPositions &vect);
 	void assignColorToDestroyedStones(const int column, const int row);
 
-	void findStonesSameColorInColumn(vectorOfPositions &combos, King::Engine::Texture color, const int column, const int row);
-	void findStonesSameColorInRow(vectorOfPositions &combos, King::Engine::Texture color, const int column, const int row);
+	void findStonesSameColorInColumn(vectorOfPositions &combos, Texture color, const int column, const int row);
+	void findStonesSameColorInRow(vectorOfPositions &combos, Texture color, const int column, const int row);
 	
 	void tryToSwapStones(const position<int> originIndex, const position<int> endIndex);
 	void swap(const position<int> originIndex, const position<int> endIndex, pairOfActions stoneMoveAction);
@@ -50,6 +53,7 @@ private:
 	bool mFirst;
 	bool mStoneSelected;
 	position<int> mGridOriginIndex;
+	AnimationManager *mAnimationManager;
 };
 
 //**********************************************************************

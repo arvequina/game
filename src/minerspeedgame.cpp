@@ -1,4 +1,5 @@
 #include "minerspeedgame.h"
+#include "animationManager.h"
 
 MinerSpeedGame::MinerSpeedGame()
 	: mEngine("./assets")
@@ -12,7 +13,14 @@ MinerSpeedGame::~MinerSpeedGame() {
 }
 
 void MinerSpeedGame::Start() {
+	Initialize();
 	mEngine.Start(*this);
+}
+
+void MinerSpeedGame::Initialize() {
+	mEngine.initializeTimer();
+	mAnimationManager = new AnimationManager();
+	mEngine.setAnimationManager(mAnimationManager);
 }
 
 void MinerSpeedGame::Update() {
@@ -121,9 +129,10 @@ void MinerSpeedGame::swap(const position<int> originIndex, const position<int> e
 	// just allow one swap
 	mEngine.SetMouseButtonDown(false);
 	// add moving actions to swaped stones
-	mEngine.addStoneAction(endIndex.column, endIndex.row, stoneMoveAction.first);
-	mEngine.addStoneAction(originIndex.column, originIndex.row, stoneMoveAction.second);
-	vectorOfPositions destroyOriginStones, destroyEndStones;
+	mAnimationManager->addAnimation(new Animation(endIndex, stoneMoveAction.first, mEngine.getStoneColors()[endIndex.column][endIndex.row], mEngine.getCurrentTime()));
+	mAnimationManager->addAnimation(new Animation(originIndex, stoneMoveAction.second, mEngine.getStoneColors()[originIndex.column][originIndex.row], mEngine.getCurrentTime()));
+	
+    vectorOfPositions destroyOriginStones, destroyEndStones;
 	destroyOriginStones = getStonesToDestroy(originIndex.column, originIndex.row);
 	destroyEndStones = getStonesToDestroy(endIndex.column, endIndex.row);
 	if (destroyOriginStones.size() != 0 || destroyEndStones.size() != 0) {
@@ -145,11 +154,11 @@ void MinerSpeedGame::swap(const position<int> originIndex, const position<int> e
 pairOfActions MinerSpeedGame::createVerticalStoneMoveAction(bool upDirection) {
 	pairOfActions moveAction;
 	if (upDirection) {
-		moveAction.first = King::Engine::ActionsFromGestures::FROM_DOWN;
-		moveAction.second = King::Engine::ActionsFromGestures::FROM_UP;
+		moveAction.first = ActionFromGesture::FROM_DOWN;
+		moveAction.second = ActionFromGesture::FROM_UP;
 	} else {
-		moveAction.first = King::Engine::ActionsFromGestures::FROM_UP;
-		moveAction.second = King::Engine::ActionsFromGestures::FROM_DOWN;
+		moveAction.first = ActionFromGesture::FROM_UP;
+		moveAction.second = ActionFromGesture::FROM_DOWN;
 	}
 	return moveAction;
 }
@@ -157,11 +166,11 @@ pairOfActions MinerSpeedGame::createVerticalStoneMoveAction(bool upDirection) {
 pairOfActions MinerSpeedGame::createHorizontalStoneMoveAction(bool leftDirection) {
 	pairOfActions moveAction;
 	if (leftDirection) {
-		moveAction.first = King::Engine::ActionsFromGestures::FROM_LEFT;
-		moveAction.second = King::Engine::ActionsFromGestures::FROM_RIGHT;
+		moveAction.first = ActionFromGesture::FROM_LEFT;
+		moveAction.second = ActionFromGesture::FROM_RIGHT;
 	} else {
-		moveAction.first = King::Engine::ActionsFromGestures::FROM_RIGHT;
-		moveAction.second = King::Engine::ActionsFromGestures::FROM_LEFT;
+		moveAction.first = ActionFromGesture::FROM_RIGHT;
+		moveAction.second = ActionFromGesture::FROM_LEFT;
 	}
 	return moveAction;
 }
@@ -172,7 +181,7 @@ vectorOfPositions MinerSpeedGame::getStonesToDestroy(const int column, const int
 	stonesColumn.reserve(MIN_STONES_COMBO * 3 + 1);
 	stonesRow.reserve(MIN_STONES_COMBO * 3 + 1);
 
-	King::Engine::Texture currentColor = mEngine.getStoneColors()[column][row];
+	Texture currentColor = mEngine.getStoneColors()[column][row];
 	findStonesSameColorInColumn(stonesColumn, currentColor, column, row);
 	findStonesSameColorInRow(stonesRow, currentColor, column, row);
 	// nothing to do in these cases
@@ -197,7 +206,7 @@ vectorOfPositions MinerSpeedGame::getStonesToDestroy(const int column, const int
 	return resultBoth;
 }
 
-void MinerSpeedGame::findStonesSameColorInColumn(vectorOfPositions &stones, King::Engine::Texture color, const int column, const int row) {
+void MinerSpeedGame::findStonesSameColorInColumn(vectorOfPositions &stones, Texture color, const int column, const int row) {
 	// iterate left in the same column and keep the row
 	for (int currentColumn = column - 1; currentColumn >= 0; --currentColumn) {
 		if (color == mEngine.getStoneColors()[currentColumn][row]) {
@@ -220,7 +229,7 @@ void MinerSpeedGame::findStonesSameColorInColumn(vectorOfPositions &stones, King
 	}
 }
 
-void MinerSpeedGame::findStonesSameColorInRow(vectorOfPositions &stones, King::Engine::Texture color, const int column, const int row) {
+void MinerSpeedGame::findStonesSameColorInRow(vectorOfPositions &stones, Texture color, const int column, const int row) {
 	// iterate down in the same row and keep the column
 	for (int currentRow = row + 1; currentRow < GAME_GRID_SIZE_Y; ++currentRow) {
 		if (color == mEngine.getStoneColors()[column][currentRow]) {
@@ -248,7 +257,7 @@ void MinerSpeedGame::destroyAndFillStones(const vectorOfPositions &vect) {
 		return;
 	}
 	for (auto nextPos : vect) {
-		mEngine.addStoneAction(nextPos.column, nextPos.row, King::Engine::ActionsFromGestures::DESTROY);
+		mAnimationManager->addAnimation(new Animation(nextPos, ActionFromGesture::DESTROY, mEngine.getStoneColors()[nextPos.column][nextPos.row], mEngine.getCurrentTime()));
 		destroyStone(nextPos);	
 	}
 	for (auto nextPos : vect) {
@@ -257,7 +266,7 @@ void MinerSpeedGame::destroyAndFillStones(const vectorOfPositions &vect) {
 }
 
 void MinerSpeedGame::destroyStone(const position<int> &pos) {
-	mEngine.setStoneColor(pos.column, pos.row, King::Engine::Texture::TEXTURE_EMPTY);
+	mEngine.setStoneColor(pos.column, pos.row, Texture::TEXTURE_EMPTY);
 }
 
 void MinerSpeedGame::assignColorToDestroyedStones(const int column, const int row) {
@@ -267,17 +276,17 @@ void MinerSpeedGame::assignColorToDestroyedStones(const int column, const int ro
 		return;
 	}
 	// if cell already has a color -> check above
-	if (mEngine.getStoneColors()[column][row] != King::Engine::Texture::TEXTURE_EMPTY) {
+	if (mEngine.getStoneColors()[column][row] != Texture::TEXTURE_EMPTY) {
 		assignColorToDestroyedStones(column, row - 1);
 		return; 
 	}
 	// find stone above that is not empty
 	bool found = false;
 	for (int nextRow = row - 1; nextRow >= 0; --nextRow) {
-		if (mEngine.getStoneColors()[column][nextRow] != King::Engine::Texture::TEXTURE_EMPTY) {
+		if (mEngine.getStoneColors()[column][nextRow] != Texture::TEXTURE_EMPTY) {
 			// assign current color from the stone above
 			mEngine.setStoneColor(column, row, mEngine.getStoneColors()[column][nextRow]);
-			mEngine.setStoneColor(column, nextRow, King::Engine::Texture::TEXTURE_EMPTY);
+			mEngine.setStoneColor(column, nextRow, Texture::TEXTURE_EMPTY);
 			found = true;
 			break;
 		}

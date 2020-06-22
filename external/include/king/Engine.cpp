@@ -19,6 +19,7 @@
 #include "SdlWindow.h"
 #include "SdlSurface.h"
 #include "Updater.h"
+#include "../../../src/animationManager.h"
 
 namespace King {
 	static const int WindowWidth = WINDOW_WITDH;
@@ -34,28 +35,22 @@ namespace King {
 		}
 		void initialize();
 		const position<float>(&getStonePositions() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
-		const King::Engine::Texture(&getStoneColors() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
+		const Texture(&getStoneColors() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
 		void setStonePosition(const int column, const int row, const float mouseX, const float mouseY);
 		void swapStoneColor(const int column, const int row, const int directionX, const int directionY);
-		void setStoneColor(const int column, const int row, King::Engine::Texture color);
-		const unsigned int getStoneActions(int column, int row);
-		unsigned int(&getStoneActionGrid())[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
-		void resetStonesActionGrid();
-		std::list<King::Engine::actionsAnimation>* getAnimations();
+		void setStoneColor(const int column, const int row, Texture color);
 	private:
 		position<float> mPositions[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
-		King::Engine::Texture mColors[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
-		unsigned int mStonesActions[8][8];
-		std::list<King::Engine::actionsAnimation> mAnimations;
+		Texture mColors[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
+		unsigned int mStonesActions[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
 	};
 
 	struct Engine::EngineImplementation {
 		Sdl mSdl;
 		SdlWindow mSdlWindow;
 		GlContext mGlContext;
-		std::unique_ptr<SdlSurface> mSdlSurfaceContainer[Engine::TEXTURE_MAX];
+		std::unique_ptr<SdlSurface> mSdlSurfaceContainer[Texture::TEXTURE_MAX];
 		std::unique_ptr<SdlSurface> mFontSdlSurface;
-		std::unique_ptr<Engine::GameGrid> mGameGrid;
 		float mElapsedTicks;
 		float mLastFrameSeconds;
 		Updater* mUpdater;
@@ -78,7 +73,6 @@ namespace King {
 			, mQuit(false)
 			, mUpdater(nullptr)
 			, mElapsedTicks(static_cast<float>(SDL_GetTicks()))
-			, mGameGrid(new GameGrid)
 		{}
 
 		void Start();
@@ -87,7 +81,8 @@ namespace King {
 	};
 
 	Engine::Engine(const char* assetsDirectory)
-		: mPimpl(new EngineImplementation) {
+		: mPimpl(new EngineImplementation)
+	    , mGameGrid(new GameGrid) {
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 		SDL_GL_SetSwapInterval(1);
@@ -107,13 +102,13 @@ namespace King {
 		std::string transparent = assets; transparent += "/Transparent.png";
 		std::string font = assets; font += "/berlin_sans_demi_72_0.png";
 
-		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_BACKGROUND].reset(new SdlSurface(background.c_str()));
-		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_BLUE].reset(new SdlSurface(blue.c_str()));
-		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_GREEN].reset(new SdlSurface(green.c_str()));
-		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_PURPLE].reset(new SdlSurface(purple.c_str()));
-		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_RED].reset(new SdlSurface(red.c_str()));
-		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_YELLOW].reset(new SdlSurface(yellow.c_str()));
-		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_EMPTY].reset(new SdlSurface(transparent.c_str()));
+		mPimpl->mSdlSurfaceContainer[Texture::TEXTURE_BACKGROUND].reset(new SdlSurface(background.c_str()));
+		mPimpl->mSdlSurfaceContainer[Texture::TEXTURE_BLUE].reset(new SdlSurface(blue.c_str()));
+		mPimpl->mSdlSurfaceContainer[Texture::TEXTURE_GREEN].reset(new SdlSurface(green.c_str()));
+		mPimpl->mSdlSurfaceContainer[Texture::TEXTURE_PURPLE].reset(new SdlSurface(purple.c_str()));
+		mPimpl->mSdlSurfaceContainer[Texture::TEXTURE_RED].reset(new SdlSurface(red.c_str()));
+		mPimpl->mSdlSurfaceContainer[Texture::TEXTURE_YELLOW].reset(new SdlSurface(yellow.c_str()));
+		mPimpl->mSdlSurfaceContainer[Texture::TEXTURE_EMPTY].reset(new SdlSurface(transparent.c_str()));
 		mPimpl->mFontSdlSurface.reset(new SdlSurface(font.c_str()));
 
 		glMatrixMode(GL_PROJECTION);
@@ -158,7 +153,6 @@ namespace King {
 	}
 
 	void Engine::Start(Updater& updater) {
-		initializeTimer();
 		mPimpl->mUpdater = &updater;
 		mPimpl->mSdlWindow.Show();
 		mPimpl->Start();
@@ -172,7 +166,7 @@ namespace King {
 		return mPimpl->mSdlSurfaceContainer[texture]->Width();
 	}
 
-	void Engine::Render(Engine::Texture texture, const glm::mat4& transform, const float scaling) {
+	void Engine::Render(Texture texture, const glm::mat4& transform, const float scaling) {
 		glLoadMatrixf(reinterpret_cast<const float*>(&transform));
 		SdlSurface& surface = *mPimpl->mSdlSurfaceContainer[texture];
 		surface.Bind();
@@ -264,23 +258,24 @@ namespace King {
 	}
 
 	void Engine::fillScene() {
-		Render(King::Engine::TEXTURE_BACKGROUND, 0.0f, 0.0f);
+		Render(Texture::TEXTURE_BACKGROUND, 0.0f, 0.0f);
 		const float pos_x_ini = GRID_POS_BEGIN_X;
 		const float pos_y_ini = GRID_POS_BEGIN_Y + OFFSET_RENDER_Y;
 		// nested loop of 8 by 8 (low computing cost)
 		for (int row = 0; row < GAME_GRID_SIZE_Y; ++row) {
 			for (int column = 0; column < GAME_GRID_SIZE_X; ++column) {
-				if (mPimpl->mGameGrid->getStoneActions(column, row) == 0) {// nothing is going on so just do the regular render
-					Render(mPimpl->mGameGrid->getStoneColors()[column][row], pos_x_ini + mPimpl->mGameGrid->getStonePositions()[column][row].column,
-						pos_y_ini + mPimpl->mGameGrid->getStonePositions()[column][row].row);
-				} else { // stuff is going on so render empty
-					Render(King::Engine::Texture::TEXTURE_EMPTY, pos_x_ini + mPimpl->mGameGrid->getStonePositions()[column][row].column,
-						pos_y_ini + mPimpl->mGameGrid->getStonePositions()[column][row].row);
-				}
+				// no animations left then regular render, if animations left then empty stone render
+				Texture renderColor = mGameGrid->getStoneColors()[column][row];
+				position<float> renderStonePosition(pos_x_ini + mGameGrid->getStonePositions()[column][row].column,
+					                                pos_y_ini + mGameGrid->getStonePositions()[column][row].row);
+				if (mAnimationManager->getStoneActions(column, row) > 0) {
+					renderColor = Texture::TEXTURE_EMPTY;
+				} 
+				Render(renderColor, renderStonePosition.column, renderStonePosition.row);
 			}
 		}
 		printTimeLeft();
-		renderAnimations();
+		checkAnimationsToRender();
 	}
 
 	void Engine::printTimeLeft() {
@@ -291,66 +286,16 @@ namespace King {
 			Write(std::to_string(static_cast<int>(mTimeLeft)).c_str(), POS_TIME_LEFT_NUM_X, POS_TIME_LEFT_NUM_Y);
 		}
 	}
-	void Engine::renderAnimations() {
-		std::list<King::Engine::actionsAnimation> *actions = mPimpl->mGameGrid->getAnimations();
-		Uint32 currentTick = SDL_GetTicks();
-		if (actions->size() > 0) {
-			bool done = false;
-			for (auto action: *actions) {
-				if (currentTick - action.startTime > ANIMATION_DURATION * 1000.0f) { // animation done
-					mPimpl->mGameGrid->getStoneActionGrid()[action.column][action.row]--;
-					done = true;
-				} else { // do animation
-					float scaling = 1.0f;
-					float pos_x_ini = GRID_POS_BEGIN_X;
-					float pos_y_ini = GRID_POS_BEGIN_Y + OFFSET_RENDER_Y;
-					float timeRemaining = ANIMATION_DURATION * 1000.0f - (currentTick - action.startTime);
-					float offsetAnimation = timeRemaining * static_cast<float>(STONE_SIZE_X) / (ANIMATION_DURATION * 1000.0f);
-					switch (action.action)
-					{
-					case Engine::ActionsFromGestures::FROM_DOWN:
-						pos_y_ini += offsetAnimation;
-						break;
-					case Engine::ActionsFromGestures::FROM_UP:
-						pos_y_ini -= offsetAnimation;
-						break;
-					case Engine::ActionsFromGestures::FROM_LEFT:
-						pos_x_ini += offsetAnimation;
-						break;
-					case Engine::ActionsFromGestures::FROM_RIGHT:
-						pos_x_ini -= offsetAnimation;
-						break;
-					case Engine::ActionsFromGestures::DESTROY:
-						scaling = 0.0f;
-						break;
-					}
-					Render(action.incomingColor, pos_x_ini + mPimpl->mGameGrid->getStonePositions()[action.column][action.row].column,
-						pos_y_ini + mPimpl->mGameGrid->getStonePositions()[action.column][action.row].row, scaling);
-				}
-			}
-			if (done) {
-				actions->clear();
-			}
-		} else {
-			// reset action grid
-			mPimpl->mGameGrid->resetStonesActionGrid();
-		}
-	}
-
-	void Engine::addStoneAction(const int column, const int row, const ActionsFromGestures actionGesture) {
-		std::list<King::Engine::actionsAnimation> *actions = mPimpl->mGameGrid->getAnimations();
-		King::Engine::actionsAnimation action;
-		action.action = actionGesture;
-		action.column = column;
-		action.row = row;
-		action.incomingColor = getStoneColors()[column][row];
-		action.startTime = SDL_GetTicks();
-		mPimpl->mGameGrid->getStoneActionGrid()[column][row]++;
-		actions->push_back(action);
+	void Engine::checkAnimationsToRender() {
+		mAnimationManager->renderAnimations(this);
 	}
 
 	void Engine::initializeTimer() {
 		mStartTime = getCurrentTime();
+	}
+
+	void Engine::setAnimationManager(AnimationManager* manager) {
+		mAnimationManager.reset(manager);
 	}
 
 	bool Engine::isTimeOver() {
@@ -373,27 +318,27 @@ namespace King {
 	}
 
 	void Engine::setStonePosition(const int column, const int row, const float mouseX, const float mouseY) {
-		mPimpl->mGameGrid->setStonePosition(column, row, mouseX, mouseY);
+		mGameGrid->setStonePosition(column, row, mouseX, mouseY);
 	}
 
 	const position<float>(&Engine::getStonePositions() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y] {
-		return mPimpl->mGameGrid->getStonePositions();
+		return mGameGrid->getStonePositions();
 	}
 
 	void Engine::swapStoneColor(const int column, const int row, const int directionX, const int directionY) {
-		mPimpl->mGameGrid->swapStoneColor(column, row, directionX, directionY);
+		mGameGrid->swapStoneColor(column, row, directionX, directionY);
 	}
 
-	void Engine::setStoneColor(const int column, const int row, King::Engine::Texture color) {
-		mPimpl->mGameGrid->setStoneColor(column, row, color);
+	void Engine::setStoneColor(const int column, const int row, Texture color) {
+		mGameGrid->setStoneColor(column, row, color);
 	}
 
-	const King::Engine::Texture(&Engine::getStoneColors() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y] {
-		return mPimpl->mGameGrid->getStoneColors();
+	const Texture(&Engine::getStoneColors() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y] {
+		return mGameGrid->getStoneColors();
 	}
 
-    King::Engine::Texture Engine::getRandomStoneColor() {
-		return static_cast<King::Engine::Texture>(rand() % 5 + 1);
+    Texture Engine::getRandomStoneColor() {
+		return static_cast<Texture>(rand() % 5 + 1);
 	}
 
 	void Engine::EngineImplementation::Start() {
@@ -450,13 +395,12 @@ namespace King {
 		int column = 0, row = 0;
 		float posX = 0.0f, posY = 0.0f;
 		std::srand(time(0));
-		// nested loop for small grid 8x8
+		// nested loop for small grid GAME_GRID_SIZE_X x GAME_GRID_SIZE_Y
 		for (int row = 0; row < GAME_GRID_SIZE_Y; ++row) {
 			for (int column = 0; column < GAME_GRID_SIZE_X; ++column) {
-				mStonesActions[column][row] = 0;
 				mPositions[column][row].column = posX + column * STONE_SIZE_X;
 				mPositions[column][row].row = posY + row * STONE_SIZE_Y;
-				King::Engine::Texture color = getRandomStoneColor();
+				Texture color = getRandomStoneColor();
 			    while ((row >= 2 && mColors[column][row - 1] == color && mColors[column][row - 2] == color) ||
 					   (column >= 2 && mColors[column - 1][row] == color && mColors[column - 2][row] == color)) {
 					color = getRandomStoneColor();
@@ -482,38 +426,14 @@ namespace King {
 		}
 	}
 	
-	void Engine::GameGrid::setStoneColor(const int column, const int row, King::Engine::Texture color) {
+	void Engine::GameGrid::setStoneColor(const int column, const int row, Texture color) {
 		// check for writting out of bounds
 		if (row >= 0 && row < GAME_GRID_SIZE_Y && column >= 0 && column < GAME_GRID_SIZE_X) {
 			mColors[column][row] = color;
 		}
 	}
 
-	const King::Engine::Texture(&Engine::GameGrid::getStoneColors() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y] {
+	const Texture(&Engine::GameGrid::getStoneColors() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y] {
 		return mColors;
-	}
-
-	const unsigned int Engine::GameGrid::getStoneActions(int column, int row)
-	{
-		return mStonesActions[column][row];
-	}
-
-	unsigned int(&Engine::GameGrid::getStoneActionGrid())[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y]
-	{
-		return mStonesActions;
-	}
-
-	void Engine::GameGrid::resetStonesActionGrid()
-	{
-		for (int row = 0; row < GAME_GRID_SIZE_Y; ++row) {
-			for (int column = 0; column < GAME_GRID_SIZE_X; ++column) {
-				mStonesActions[column][row] = 0;
-			}
-		}
-	}
-
-	std::list<King::Engine::actionsAnimation>* Engine::GameGrid::getAnimations()
-	{
-		return &mAnimations;
 	}
 }
