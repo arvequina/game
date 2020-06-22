@@ -44,6 +44,25 @@ void MinerSpeedGame::maybeDispatchMouseDownEvent() {
 	}
 }
 
+void MinerSpeedGame::maybeDispatchMouseUpEvent() {
+	if (!mEngine.GetMouseButtonUp()) {
+		return;
+	}
+	mFirst = true;
+	mEngine.SetMouseButtonUp(false);
+	position<int> gridEndIndex = calculateMouseGridPosition();
+	if (mStoneSelected) {
+		if (!gridEndIndex.isSameIndex(mGridOriginIndex)) {
+			tryToSwapStones(mGridOriginIndex, gridEndIndex);
+		}
+		mStoneSelected = false;
+	} else {
+		if (gridEndIndex.isSameIndex(mGridOriginIndex)) {
+			mStoneSelected = true;
+		}
+	}
+}
+
 position<int> MinerSpeedGame::calculateMouseGridPosition() {
 	return getAndConvertMousePositionToGridIndex();
 }
@@ -77,24 +96,6 @@ position<int> MinerSpeedGame::getAndConvertMousePositionToGridIndex() {
 
 inline position<float> MinerSpeedGame::translateMouseToGridPosition() const {
 	return position<float>(mEngine.GetMouseX() - GRID_POS_BEGIN_X, mEngine.GetMouseY() - GRID_POS_BEGIN_Y);
-}
-
-void MinerSpeedGame::maybeDispatchMouseUpEvent() {
-	if (mEngine.GetMouseButtonUp()) {
-		mFirst = true;
-		mEngine.SetMouseButtonUp(false);
-		position<int> gridEndIndex = calculateMouseGridPosition();
-		if (mStoneSelected) { 
-			if (!((gridEndIndex.column == mGridOriginIndex.column) && (gridEndIndex.row == mGridOriginIndex.row))) {
-				tryToSwapStones(mGridOriginIndex, gridEndIndex);
-			}
-			mStoneSelected = false;
-		} else {
-			if ((gridEndIndex.column == mGridOriginIndex.column) && (gridEndIndex.row == mGridOriginIndex.row)) {
-				mStoneSelected = true;
-			}
-		}
-	}
 }
 
 void MinerSpeedGame::tryToSwapStones(const position<int> originIndex, const position<int> endIndex) {

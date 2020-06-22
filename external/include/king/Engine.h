@@ -8,7 +8,14 @@ class position {
 public:
 	position() : column(static_cast<T>(-1)), row(static_cast<T>(-1)) {}
 	position(T newCol, T newRow) { column = newCol; row = newRow; }
-	//inline bool operator==(const position& left, const position& right) { return (left.column == right.column) && (left.row == right.row)}
+	bool isSameIndex(const position<int>& comparison) {
+		return (this->column == comparison.column )
+			&& (this->row == comparison.row);
+	}
+	bool isSameIndexF(const position<float>& comparison) {
+		return (this->column - comparison.column < std::numeric_limits<float>::epsilon())
+			&& (this->row - comparison.row < std::numeric_limits<float>::epsilon());
+	}
 	T column;
 	T row;
 };
