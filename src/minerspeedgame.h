@@ -15,7 +15,7 @@ typedef std::pair<King::Engine::ActionsFromGestures, King::Engine::ActionsFromGe
 class MinerSpeedGame : public King::Updater {
 public:
 	MinerSpeedGame();
-	// destructor
+	~MinerSpeedGame();
 	void Start();
 	void Update();
 

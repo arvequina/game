@@ -5,8 +5,11 @@ MinerSpeedGame::MinerSpeedGame()
 	, mRotation(0.0f)
 	, mFirst(true)
 	, mStoneSelected(false)
-	, mGridOriginIndex(-1,-1)
-{}
+	, mGridOriginIndex(-1,-1) {
+}
+
+MinerSpeedGame::~MinerSpeedGame() {
+}
 
 void MinerSpeedGame::Start() {
 	mEngine.initGame();
