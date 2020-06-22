@@ -4,6 +4,7 @@ MinerSpeedGame::MinerSpeedGame()
 	: mEngine("./assets")
 	, mRotation(0.0f)
 	, mFirst(true)
+	, mStoneSelected(false)
 	, mGridOriginIndex(-1,-1)
 {}
 
@@ -33,11 +34,17 @@ void MinerSpeedGame::maybeDispatchMouseDownEvent() {
 		return;
 	}
 	// first time serves to select stone, then user can drag or just click somewhere else
-	if (mFirst) { 
-		calculateStoneOriginPosition();
-	} else { // DRAGGING scenario
-		calculateStoneEndPosition();
+	if (!mStoneSelected) {
+		if (mFirst) {
+			calculateStoneOriginPosition();
+		} else { // DRAGGING scenario
+			calculateStoneEndPosition();
+		}
 	}
+}
+
+position<int> MinerSpeedGame::calculateMouseGridPosition() {
+	return getAndConvertMousePositionToGridIndex();
 }
 
 void MinerSpeedGame::calculateStoneOriginPosition() {
@@ -51,7 +58,7 @@ void MinerSpeedGame::calculateStoneEndPosition() {
 	position<int> gridEndIndex = getAndConvertMousePositionToGridIndex();
 	// check if swap is possible
 	if (gridEndIndex.column > -1 && gridEndIndex.row > -1 && mGridOriginIndex.column > -1 && mGridOriginIndex.row > -1) {
-		tryToSwapStones(mGridOriginIndex.column, mGridOriginIndex.row, gridEndIndex.column, gridEndIndex.row);
+		tryToSwapStones(mGridOriginIndex, gridEndIndex);
 	}
 }
 
@@ -75,46 +82,49 @@ void MinerSpeedGame::maybeDispatchMouseUpEvent() {
 	if (mEngine.GetMouseButtonUp()) {
 		mFirst = true;
 		mEngine.SetMouseButtonUp(false);
-		float posEndX = mEngine.GetMouseX();
-		float posEndY = mEngine.GetMouseY();
-		// check swap of stones if possible
-		// ...
+		position<int> gridEndIndex = calculateMouseGridPosition();
+		if (mStoneSelected) { 
+			if (!((gridEndIndex.column == mGridOriginIndex.column) && (gridEndIndex.row == mGridOriginIndex.row))) {
+				tryToSwapStones(mGridOriginIndex, gridEndIndex);
+			}
+			mStoneSelected = false;
+		} else {
+			if ((gridEndIndex.column == mGridOriginIndex.column) && (gridEndIndex.row == mGridOriginIndex.row)) {
+				mStoneSelected = true;
+			}
+		}
 	}
 }
 
-void MinerSpeedGame::tryToSwapStones(const int originColumn, const int originRow, const int endColumn, const int endRow) {
+void MinerSpeedGame::tryToSwapStones(const position<int> originIndex, const position<int> endIndex) {
 	// only allow row and column-wise moves
 	int swaped = false;
 	pairOfActions stoneMoveAction;
-	if (endRow >= 0 && abs(originRow - endRow) == 1) {
+	if (endIndex.row >= 0 && abs(originIndex.row - endIndex.row) == 1 && abs(originIndex.column - endIndex.column) == 0) {
 		swaped = true;
-		mEngine.swapStoneColor(originColumn, originRow, 0, endRow - originRow);
-		stoneMoveAction = createVerticalStoneMoveAction(originRow - endRow > 0);
-	} else if (endColumn >= 0 && abs(originColumn - endColumn) == 1) {
+		mEngine.swapStoneColor(originIndex.column, originIndex.row, 0, endIndex.row - originIndex.row);
+		stoneMoveAction = createVerticalStoneMoveAction(originIndex.row - endIndex.row > 0);
+	} else if (endIndex.column >= 0 && abs(originIndex.column - endIndex.column) == 1 && abs(originIndex.row - endIndex.row) == 0) {
 		// if condition to do swap (3+ stones same color) then do swap
 		swaped = true;
-		mEngine.swapStoneColor(originColumn, originRow, endColumn - originColumn, 0);
-		stoneMoveAction = createHorizontalStoneMoveAction(originColumn - endColumn > 0);
+		mEngine.swapStoneColor(originIndex.column, originIndex.row, endIndex.column - originIndex.column, 0);
+		stoneMoveAction = createHorizontalStoneMoveAction(originIndex.column - endIndex.column > 0);
 	}
 
 	if (swaped) {
 		// just allow one swap
 		mEngine.SetMouseButtonDown(false);
-		// not allowed to swap same color stones
-		if (mEngine.getStoneColors()[originColumn][originRow] == mEngine.getStoneColors()[endColumn][endRow]) {
-			return;
-		}
 		// add moving actions to swaped stones
-	    mEngine.addStoneAction(endColumn, endRow, stoneMoveAction.first);
-        mEngine.addStoneAction(originColumn, originRow, stoneMoveAction.second);
+	    mEngine.addStoneAction(endIndex.column, endIndex.row, stoneMoveAction.first);
+        mEngine.addStoneAction(originIndex.column, originIndex.row, stoneMoveAction.second);
 		vectorOfPositions destroyOriginStones, destroyEndStones;
-		destroyOriginStones = getStonesToDestroy(originColumn, originRow);
-		destroyEndStones    = getStonesToDestroy(endColumn, endRow);
+		destroyOriginStones = getStonesToDestroy(originIndex.column, originIndex.row);
+		destroyEndStones    = getStonesToDestroy(endIndex.column, endIndex.row);
 		if (destroyOriginStones.size() != 0 || destroyEndStones.size() !=0) {
 			destroyAndFillStones(destroyOriginStones);
 			destroyAndFillStones(destroyEndStones);
 		} else { // put stones to original location if swap not possible
-			mEngine.swapStoneColor(originColumn, originRow, endColumn - originColumn, endRow - originRow);
+			mEngine.swapStoneColor(originIndex.column, originIndex.row, endIndex.column - originIndex.column, endIndex.row - originIndex.row);
 		}
 		bool moreStones = true;
 		while (moreStones) {

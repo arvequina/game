@@ -8,6 +8,7 @@ class position {
 public:
 	position() : column(static_cast<T>(-1)), row(static_cast<T>(-1)) {}
 	position(T newCol, T newRow) { column = newCol; row = newRow; }
+	//inline bool operator==(const position& left, const position& right) { return (left.column == right.column) && (left.row == right.row)}
 	T column;
 	T row;
 };
@@ -28,7 +29,7 @@ constexpr auto RENDER_GRID_SIZE_Y = STONE_SIZE_Y * GAME_GRID_SIZE_Y;
 constexpr auto OFFSET_RENDER_Y = 25.0f;
 constexpr auto GRID_POS_BEGIN_X = 330.0f;
 constexpr auto GRID_POS_BEGIN_Y = 75.0f;
-constexpr auto MAX_GAME_TIME = 600.0f;
+constexpr auto MAX_GAME_TIME = 60.0f;
 constexpr auto ANIMATION_DURATION = 1.0f;
 constexpr auto GAME_OVER_WAIT_TIME = 3.0f;
 constexpr auto FPS = 60.0f;

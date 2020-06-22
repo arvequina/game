@@ -33,9 +33,10 @@ private:
 	void findStonesSameColorInColumn(vectorOfPositions &combos, King::Engine::Texture color, const int column, const int row);
 	void findStonesSameColorInRow(vectorOfPositions &combos, King::Engine::Texture color, const int column, const int row);
 	
-	void tryToSwapStones(const int originColumn, const int originRow, const int endColumn, const int endRow);
+	void tryToSwapStones(const position<int> originIndex, const position<int> endIndex);
 	void calculateStoneOriginPosition();
 	void calculateStoneEndPosition();
+	position<int> calculateMouseGridPosition();
 	position<float> translateMouseToGridPosition() const;
 	position<int> MinerSpeedGame::getAndConvertMousePositionToGridIndex();
 	pairOfActions createVerticalStoneMoveAction(bool upDirection);
@@ -46,6 +47,7 @@ private:
 	float mStartTime;
 	float mTimeLeft;
 	bool mFirst;
+	bool mStoneSelected;
 	position<int> mGridOriginIndex;
 };
 
