@@ -38,7 +38,7 @@ void MinerSpeedGame::maybeDispatchMouseDownEvent() {
 	if (!mStoneSelected) {
 		if (mFirst) {
 			calculateStoneOriginPosition();
-		} else { // DRAGGING scenario
+		} else { // [1] dragging scenario
 			calculateStoneEndPosition();
 		}
 	}
@@ -52,11 +52,14 @@ void MinerSpeedGame::maybeDispatchMouseUpEvent() {
 	mEngine.SetMouseButtonUp(false);
 	position<int> gridEndIndex = calculateMouseGridPosition();
 	if (mStoneSelected) {
+		// [2] click - click scenario
+		// stone selected and origin/end stone are different -> try swap
 		if (!gridEndIndex.isSameIndex(mGridOriginIndex)) {
 			tryToSwapStones(mGridOriginIndex, gridEndIndex);
 		}
 		mStoneSelected = false;
 	} else {
+		// no stone selected and origin/end index is the same -> select stone
 		if (gridEndIndex.isSameIndex(mGridOriginIndex)) {
 			mStoneSelected = true;
 		}
@@ -68,15 +71,15 @@ position<int> MinerSpeedGame::calculateMouseGridPosition() {
 }
 
 void MinerSpeedGame::calculateStoneOriginPosition() {
-	// check mouse pos and intersection in the 8x8 grid and substract initial point
+	// check mouse pos and intersection in the GAME_GRID_SIZE_X x GAME_GRID_SIZE_Y grid and substract initial point
 	mGridOriginIndex = getAndConvertMousePositionToGridIndex();
 	mFirst = false;
 }
 
 void MinerSpeedGame::calculateStoneEndPosition() {
-	// check mouse pos and intersection in the 8x8 grid and substract initial point
+	// check mouse pos and intersection in the GAME_GRID_SIZE_X x GAME_GRID_SIZE_Y grid and substract initial point
 	position<int> gridEndIndex = getAndConvertMousePositionToGridIndex();
-	// check if swap is possible
+	// try swap if indexes are valid
 	if (gridEndIndex.column > -1 && gridEndIndex.row > -1 && mGridOriginIndex.column > -1 && mGridOriginIndex.row > -1) {
 		tryToSwapStones(mGridOriginIndex, gridEndIndex);
 	}
@@ -104,10 +107,12 @@ void MinerSpeedGame::tryToSwapStones(const position<int> originIndex, const posi
 	if (endIndex.row >= 0 && abs(originIndex.row - endIndex.row) == 1 && abs(originIndex.column - endIndex.column) == 0) {
 		mEngine.swapStoneColor(originIndex.column, originIndex.row, 0, endIndex.row - originIndex.row);
 		stoneMoveAction = createVerticalStoneMoveAction(originIndex.row - endIndex.row > 0);
+		// let's swap vertically
 		swap(originIndex, endIndex, stoneMoveAction);
 	} else if (endIndex.column >= 0 && abs(originIndex.column - endIndex.column) == 1 && abs(originIndex.row - endIndex.row) == 0) {
 		mEngine.swapStoneColor(originIndex.column, originIndex.row, endIndex.column - originIndex.column, 0);
 		stoneMoveAction = createHorizontalStoneMoveAction(originIndex.column - endIndex.column > 0);
+		// let's swap horizontally
 		swap(originIndex, endIndex, stoneMoveAction);
 	}
 }
@@ -124,8 +129,7 @@ void MinerSpeedGame::swap(const position<int> originIndex, const position<int> e
 	if (destroyOriginStones.size() != 0 || destroyEndStones.size() != 0) {
 		destroyAndFillStones(destroyOriginStones);
 		destroyAndFillStones(destroyEndStones);
-	}
-	else { // put stones to original location if swap not possible
+	} else { // put stones to original location if swap was not possible
 		mEngine.swapStoneColor(originIndex.column, originIndex.row, endIndex.column - originIndex.column, endIndex.row - originIndex.row);
 	}
 	bool moreStones = true;
