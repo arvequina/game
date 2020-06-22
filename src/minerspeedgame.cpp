@@ -285,7 +285,7 @@ void MinerSpeedGame::destroyStone(const position<int> &pos) {
 void MinerSpeedGame::assignColorToDestroyedStones(const int column, const int row) {
 	// last row so no more rows left -> generate a new one
 	if (row == 0) {
-		mEngine.setStoneColor(column, row, King::Engine::getRandomStoneColor());
+		mEngine.setStoneColor(column, row, getRandomStoneColor());
 		return;
 	}
 
@@ -308,7 +308,7 @@ void MinerSpeedGame::assignColorToDestroyedStones(const int column, const int ro
 	}
 
 	if (found == false) {
-		mEngine.setStoneColor(column, row, King::Engine::getRandomStoneColor());
+		mEngine.setStoneColor(column, row, getRandomStoneColor());
 	}
 
 	assignColorToDestroyedStones(column, row - 1);

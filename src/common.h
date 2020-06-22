@@ -43,7 +43,7 @@ public:
 typedef std::vector<position<int>> vectorOfPositions;
 typedef std::pair<ActionFromGesture, ActionFromGesture> pairOfActions;
 
-constexpr auto WINDOW_WITDH = 755;
+constexpr auto WINDOW_WIDTH = 755;
 constexpr auto WINDOW_HEIGHT = 600;
 constexpr auto POS_TIME_LEFT_TEXT_X = 50.0f;
 constexpr auto POS_TIME_LEFT_TEXT_Y = 390.0f;
@@ -63,5 +63,7 @@ constexpr auto MAX_GAME_TIME = 60.0f;
 constexpr auto ANIMATION_DURATION = 1.0f;
 constexpr auto GAME_OVER_WAIT_TIME = 3.0f;
 constexpr auto FPS = 60.0f;
+
+static Texture getRandomStoneColor() { return static_cast<Texture>(rand() % 5 + 1); }
 
 #endif // COMMON_HEADER

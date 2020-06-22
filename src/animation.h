@@ -9,7 +9,7 @@ public:
 	Animation(const position<int>& stoneIndex,
 		      const ActionFromGesture& action,
 		      const Texture& stoneColor,
-		      const unsigned int startTime)
+		      const float startTime)
 		: mStoneIndex(stoneIndex)
 		, mAction(action)
 		, mStoneColor(stoneColor)
@@ -17,12 +17,12 @@ public:
 	position<int>& stoneIndex() { return mStoneIndex; }
 	ActionFromGesture& action() { return mAction; }
 	Texture& stoneColor() { return mStoneColor; }
-	unsigned int startTime() { return mStartTime; }
+	float startTime() { return mStartTime; }
 private:
 	position<int> mStoneIndex;
 	ActionFromGesture mAction;
 	Texture mStoneColor;
-	unsigned int mStartTime;
+	float mStartTime;
 };
 
 #endif // ANIMATION_HEADER

@@ -24,10 +24,10 @@ namespace King {
 		void Start(Updater& updater);
 		void Quit();
 
-		int GetTextureHeight(Texture texture) const;
-		int GetTextureWidth(Texture texture) const;
-		void Render(Texture texture, const glm::mat4& transform, const float scaling = 1.0f);
-		void Render(Texture texture, float x, float y, const float scaling = 1.0f, float rotation = 0.0f);
+		int GetTextureHeight(const Texture texture) const;
+		int GetTextureWidth(const Texture texture) const;
+		void Render(const Texture texture, const glm::mat4& transform, const float scaling = 1.0f);
+		void Render(const Texture texture, const float x, const float y, const float scaling = 1.0f, float rotation = 0.0f);
 		void fillScene();
 		void gameIsOver();
 
@@ -36,7 +36,7 @@ namespace King {
 		void Write(const char* text, float x, float y, float rotation = 0.0f);
 
 		bool isTimeOver();
-		void waitFor(float waitTime) const;
+		void waitFor() const;
 		void checkAnimationsToRender();
 		float getCurrentTime() const;
 		void printTimeLeft();
@@ -44,9 +44,9 @@ namespace King {
 		void setStonePosition(const int column, const int row, const float mouseX, const float mouseY);
 		const position<float>(&getStonePositions() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
 		void swapStoneColor(const int column, const int row, const int directionX, const int directionY);
-		void setStoneColor(const int column, const int row, Texture color);
+		void setStoneColor(const int column, const int row, const Texture color);
 		const Texture(&getStoneColors() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
-		static Texture getRandomStoneColor();
+		
 	
 		int GetWidth() const;
 		int GetHeight() const;

@@ -17,7 +17,7 @@
 #include "../../../src/animationManager.h"
 
 namespace King {
-	static const int WindowWidth = WINDOW_WITDH;
+	static const int WindowWidth = WINDOW_WIDTH;
 	static const int WindowHeight = WINDOW_HEIGHT;
 	static const float MaxFrameTicks = 300.0f;
 	static const float TextScale = 0.5f;
@@ -33,7 +33,7 @@ namespace King {
 		const Texture(&getStoneColors() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
 		void setStonePosition(const int column, const int row, const float mouseX, const float mouseY);
 		void swapStoneColor(const int column, const int row, const int directionX, const int directionY);
-		void setStoneColor(const int column, const int row, Texture color);
+		void setStoneColor(const int column, const int row, const Texture &color);
 	private:
 		position<float> mPositions[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
 		Texture mColors[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
@@ -87,15 +87,15 @@ namespace King {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		std::string assets(assetsDirectory);
-		std::string background = assets; background += "/BackGround.jpg";
-		std::string blue = assets; blue += "/Blue.png";
-		std::string green = assets; green += "/Green.png";
-		std::string purple = assets; purple += "/Purple.png";
-		std::string red = assets; red += "/Red.png";
-		std::string yellow = assets; yellow += "/Yellow.png";
-		std::string transparent = assets; transparent += "/Transparent.png";
-		std::string font = assets; font += "/berlin_sans_demi_72_0.png";
+		const std::string assets(assetsDirectory);
+		const std::string background = assets + "/BackGround.jpg";
+		const std::string blue = assets + "/Blue.png";
+		const std::string green = assets + "/Green.png";
+		const std::string purple = assets + "/Purple.png";
+		const std::string red = assets + "/Red.png";
+		const std::string yellow = assets + "/Yellow.png";
+		const std::string transparent = assets + "/Transparent.png";
+		const std::string font = assets + "/berlin_sans_demi_72_0.png";
 
 		mPimpl->mSdlSurfaceContainer[Texture::TEXTURE_BACKGROUND].reset(new SdlSurface(background.c_str()));
 		mPimpl->mSdlSurfaceContainer[Texture::TEXTURE_BLUE].reset(new SdlSurface(blue.c_str()));
@@ -153,15 +153,15 @@ namespace King {
 		mPimpl->Start();
 	}
 
-	int Engine::GetTextureHeight(Texture texture) const {
+	int Engine::GetTextureHeight(const Texture texture) const {
 		return mPimpl->mSdlSurfaceContainer[texture]->Height();
 	}
 
-	int Engine::GetTextureWidth(Texture texture) const {
+	int Engine::GetTextureWidth(const Texture texture) const {
 		return mPimpl->mSdlSurfaceContainer[texture]->Width();
 	}
 
-	void Engine::Render(Texture texture, const glm::mat4& transform, const float scaling) {
+	void Engine::Render(const Texture texture, const glm::mat4& transform, const float scaling) {
 		glLoadMatrixf(reinterpret_cast<const float*>(&transform));
 		SdlSurface& surface = *mPimpl->mSdlSurfaceContainer[texture];
 		surface.Bind();
@@ -173,7 +173,7 @@ namespace King {
 		glEnd();
 	}
 
-	void Engine::Render(Texture texture, float x, float y, const float scaling, float rotation) {
+	void Engine::Render(const Texture texture, const float x, const float y, const float scaling, float rotation) {
 		glm::mat4 transformation;
 		transformation = glm::translate(transformation, glm::vec3(x, y, 0.0f));
 		if (rotation) {
@@ -205,18 +205,18 @@ namespace King {
 		for (; *text;++text) {
 			Glyph& g = FindGlyph(*text);
 
-			float fontTexWidth  = static_cast<float>(mPimpl->mFontSdlSurface->Width());
-			float fontTexHeight = static_cast<float>(mPimpl->mFontSdlSurface->Height());
+			const float fontTexWidth  = static_cast<float>(mPimpl->mFontSdlSurface->Width());
+			const float fontTexHeight = static_cast<float>(mPimpl->mFontSdlSurface->Height());
 
-			float uvLeft = static_cast<float>(g.x) / fontTexWidth;
-			float uvRight = static_cast<float>(g.x + g.width) / fontTexWidth;
-			float uvBottom = static_cast<float>(g.y) / fontTexHeight;
-			float uvTop = static_cast<float>(g.y + g.height) / fontTexHeight;
+			const float uvLeft = static_cast<float>(g.x) / fontTexWidth;
+			const float uvRight = static_cast<float>(g.x + g.width) / fontTexWidth;
+			const float uvBottom = static_cast<float>(g.y) / fontTexHeight;
+			const float uvTop = static_cast<float>(g.y + g.height) / fontTexHeight;
 
-			float worldLeft = static_cast<float>(g.xoffset + advance);
-			float worldRight = static_cast<float>(g.xoffset + g.width + advance);
-			float worldBottom = static_cast<float>(g.yoffset);
-			float worldTop = static_cast<float>(g.yoffset + g.height);
+			const float worldLeft = static_cast<float>(g.xoffset + advance);
+			const float worldRight = static_cast<float>(g.xoffset + g.width + advance);
+			const float worldBottom = static_cast<float>(g.yoffset);
+			const float worldTop = static_cast<float>(g.yoffset + g.height);
 
 			mPimpl->mFontSdlSurface->Bind();
 
@@ -230,7 +230,7 @@ namespace King {
 		}
 	}
 
-	void Engine::Write(const char* text, float x, float y, float rotation) {
+	void Engine::Write(const char* text, const float x, const float y, const float rotation) {
 		glm::mat4 transformation;
 		transformation = glm::translate(transformation, glm::vec3(x, y, 0.0f));
 		if (rotation) {
@@ -302,12 +302,12 @@ namespace King {
 	}
 
 	void Engine::gameIsOver() {
-		waitFor(GAME_OVER_WAIT_TIME);
+		waitFor();
 		// bye!
 		Quit();
 	}
 
-	void Engine::waitFor(float waitTime) const {
+	void Engine::waitFor() const {
 		float initialTime = getCurrentTime();
 		while ((getCurrentTime() - initialTime)*0.001f < GAME_OVER_WAIT_TIME) {}
 	}
@@ -324,16 +324,12 @@ namespace King {
 		mGameGrid->swapStoneColor(column, row, directionX, directionY);
 	}
 
-	void Engine::setStoneColor(const int column, const int row, Texture color) {
+	void Engine::setStoneColor(const int column, const int row, const Texture color) {
 		mGameGrid->setStoneColor(column, row, color);
 	}
 
 	const Texture(&Engine::getStoneColors() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y] {
 		return mGameGrid->getStoneColors();
-	}
-
-    Texture Engine::getRandomStoneColor() {
-		return static_cast<Texture>(rand() % 5 + 1);
 	}
 
 	void Engine::EngineImplementation::Start() {
@@ -343,15 +339,14 @@ namespace King {
 
 			ParseEvents();
 			
-			float currentTicks = static_cast<float>(SDL_GetTicks());
+			const float currentTicks = static_cast<float>(SDL_GetTicks());
 			float lastFrameTicks = currentTicks - mElapsedTicks;
 			mElapsedTicks = currentTicks;
 
 			lastFrameTicks = std::min(lastFrameTicks, MaxFrameTicks);
 			mLastFrameSeconds = lastFrameTicks * 0.001f;
-
-			// not updating all the time
-			if (mUpdater && mLastFrameSeconds > 0.01) {
+			// possibility to controle update according to a specific FPS. Current state max refresh speed
+			if (mUpdater) {
 				mUpdater->Update();
 			}
 		}
@@ -421,7 +416,7 @@ namespace King {
 		}
 	}
 	
-	void Engine::GameGrid::setStoneColor(const int column, const int row, Texture color) {
+	void Engine::GameGrid::setStoneColor(const int column, const int row, const Texture &color) {
 		// check for writting out of bounds
 		if (row >= 0 && row < GAME_GRID_SIZE_Y && column >= 0 && column < GAME_GRID_SIZE_X) {
 			mColors[column][row] = color;
