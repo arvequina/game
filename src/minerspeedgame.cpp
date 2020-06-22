@@ -85,13 +85,30 @@ void MinerSpeedGame::maybeDispatchMouseUpEvent() {
 void MinerSpeedGame::tryToSwapStones(const int originColumn, const int originRow, const int endColumn, const int endRow) {
 	// only allow row and column-wise moves
 	int swaped = false;
+	King::Engine::ActionsFromGestures actionOne, actionTwo;
 	if (endRow >= 0 && abs(originRow - endRow) == 1) {
 		swaped = true;
 		mEngine.swapStoneColor(originColumn, originRow, 0, endRow - originRow);
+		if (originRow - endRow > 0) {
+			actionOne = King::Engine::ActionsFromGestures::From_Down;
+			actionTwo = King::Engine::ActionsFromGestures::From_Up;
+		}
+		else {
+			actionOne = King::Engine::ActionsFromGestures::From_Up;
+			actionTwo = King::Engine::ActionsFromGestures::From_Down;
+		}
 	} else if (endColumn >= 0 && abs(originColumn - endColumn) == 1) {
 		// if condition to do swap (3+ stones same color) then do swap
 		swaped = true;
 		mEngine.swapStoneColor(originColumn, originRow, endColumn - originColumn, 0);
+		if (originColumn - endColumn > 0) {
+			actionOne = King::Engine::ActionsFromGestures::From_Left;
+			actionTwo = King::Engine::ActionsFromGestures::From_Right;
+		}
+		else {
+			actionOne = King::Engine::ActionsFromGestures::From_Right;
+			actionTwo = King::Engine::ActionsFromGestures::From_Left;
+		}
 	}
 
 	if (swaped) {
@@ -101,6 +118,8 @@ void MinerSpeedGame::tryToSwapStones(const int originColumn, const int originRow
 		if (mEngine.getStoneColors()[originColumn][originRow] == mEngine.getStoneColors()[endColumn][endRow]) {
 			return;
 		}
+	    mEngine.addAction(endColumn, endRow, actionOne, mEngine.getStoneColors()[endColumn][endRow]);
+        mEngine.addAction(originColumn, originRow, actionTwo, mEngine.getStoneColors()[originColumn][originRow]);
 		vectorOfPositions destroyOriginStones, destroyEndStones;
 		destroyOriginStones = getStonesToDestroy(originColumn, originRow);
 		destroyEndStones    = getStonesToDestroy(endColumn, endRow);
@@ -123,10 +142,9 @@ void MinerSpeedGame::tryToSwapStones(const int originColumn, const int originRow
 
 vectorOfPositions MinerSpeedGame::getStonesToDestroy(const int column, const int row) {
 	vectorOfPositions stonesColumn, stonesRow;
-	// Max we can destroy is a entire row (GAME_GRID_SIZE_X elements) and 
-	// half column (GAME_GRID_SIZE_Y/2 elements) or the opposite -> total in this case 12
-	stonesColumn.reserve(GAME_GRID_SIZE_Y + GAME_GRID_SIZE_X * 0.5);
-	stonesRow.reserve(GAME_GRID_SIZE_X + GAME_GRID_SIZE_Y * 0.5);
+	// Max we can destroy is 2 stones left + 2 stones right + 2 stones up or down + the movement (and all possible combinations) -> total 7 
+	stonesColumn.reserve(MIN_STONES_COMBO * 3 + 1);
+	stonesRow.reserve(MIN_STONES_COMBO * 3 + 1);
 
 	King::Engine::Texture currentColor = mEngine.getStoneColors()[column][row];
 	findStonesSameColorInColumn(stonesColumn, currentColor, column, row);

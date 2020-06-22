@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <vector>
+#include <list>
 
 #include "Font.h"
 #include "GlContext.h"
@@ -37,9 +38,14 @@ namespace King {
 		void setStonePosition(const int column, const int row, const float mouseX, const float mouseY);
 		void swapStoneColor(const int column, const int row, const int directionX, const int directionY);
 		void setStoneColor(const int column, const int row, King::Engine::Texture color);
+		const unsigned int getStoneActions(int column, int row);
+		unsigned int(&getStoneActionGrid())[8][8];
+		std::list<King::Engine::actionsAnimation>* getAnimations();
 	private:
 		position<float> mPositions[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
 		King::Engine::Texture mColors[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
+		unsigned int mStonesActions[8][8];
+		std::list<King::Engine::actionsAnimation> mAnimations;
 	};
 
 	struct Engine::EngineImplementation {
@@ -273,8 +279,13 @@ namespace King {
 		// nested loop of 8 by 8 (low computing cost)
 		for (int row = 0; row < GAME_GRID_SIZE_Y; ++row) {
 			for (int column = 0; column < GAME_GRID_SIZE_X; ++column) {
-				Render(mPimpl->mGameGrid->getStoneColors()[column][row], pos_x_ini + mPimpl->mGameGrid->getStonePositions()[column][row].column,
-					                                pos_y_ini + mPimpl->mGameGrid->getStonePositions()[column][row].row);
+				if (mPimpl->mGameGrid->getStoneActions(column, row) == 0) {// nothing is going on so just do the regular render
+					Render(mPimpl->mGameGrid->getStoneColors()[column][row], pos_x_ini + mPimpl->mGameGrid->getStonePositions()[column][row].column,
+						pos_y_ini + mPimpl->mGameGrid->getStonePositions()[column][row].row);
+				} else { // stuff is going on so render empty
+					Render(King::Engine::Texture::TEXTURE_EMPTY, pos_x_ini + mPimpl->mGameGrid->getStonePositions()[column][row].column,
+						pos_y_ini + mPimpl->mGameGrid->getStonePositions()[column][row].row);
+				}
 			}
 		}
 		printTimeLeft();
@@ -287,6 +298,60 @@ namespace King {
 			Write("Time Left", POS_TIME_LEFT_TEXT_X, POS_TIME_LEFT_TEXT_Y);
 			Write(std::to_string(static_cast<int>(mTimeLeft)).c_str(), POS_TIME_LEFT_NUM_X, POS_TIME_LEFT_NUM_Y);
 		}
+		doAnimations();
+	}
+	void Engine::doAnimations() {
+		std::list<King::Engine::actionsAnimation> *actions = mPimpl->mGameGrid->getAnimations();
+		Uint32 currentTick = SDL_GetTicks();
+		if (actions->size() > 0) {
+			bool done = false;
+			for (auto action: *actions) {
+				if (currentTick - action.startTime >= 500) { // animation done
+					mPimpl->mGameGrid->getStoneActionGrid()[action.column][action.row]--;
+					done = true;
+				} else { // do animation
+					float pos_x_ini = 330.0f;
+					float pos_y_ini = 100.0f;
+					float timeRemaining = 500 - (currentTick - action.startTime);
+					float offsetAnimation = timeRemaining * 43.f / 500.0f;
+					switch (action.action)
+					{
+					case Engine::ActionsFromGestures::From_Down:
+						pos_y_ini += offsetAnimation;
+						break;
+					case Engine::ActionsFromGestures::From_Up:
+						pos_y_ini -= offsetAnimation;
+						break;
+					case Engine::ActionsFromGestures::From_Left:
+						pos_x_ini += offsetAnimation;
+						break;
+					case Engine::ActionsFromGestures::From_Right:
+						pos_x_ini -= offsetAnimation;
+						break;
+					}
+					Render(action.incomingColor, pos_x_ini + mPimpl->mGameGrid->getStonePositions()[action.column][action.row].column,
+						pos_y_ini + mPimpl->mGameGrid->getStonePositions()[action.column][action.row].row);
+				}
+			}
+			if (done) {
+				actions->clear();
+			}
+		}
+	}
+
+	void Engine::addAction(const int column, const int row, const ActionsFromGestures actionGesture, const King::Engine::Texture color)
+	{
+		std::list<King::Engine::actionsAnimation> *actions = mPimpl->mGameGrid->getAnimations();
+		King::Engine::actionsAnimation action;
+		action.action = actionGesture;
+		action.column = column;
+		action.row = row;
+		action.incomingColor = color;
+		action.startTime = SDL_GetTicks();
+		mPimpl->mGameGrid->getStoneActionGrid()[column][row]++;
+		actions->push_back(action);
+
+//>>>>>>> 4be37af... add swapp animation
 	}
 
 	void Engine::initializeTimer() {
@@ -390,9 +455,11 @@ namespace King {
 		int column = 0, row = 0;
 		float posX = 0.0f, posY = 0.0f;
 		std::srand(time(0));
+//<<<<<<< HEAD
 		// nested loop for small grid 8x8
 		for (int row = 0; row < GAME_GRID_SIZE_Y; ++row) {
 			for (int column = 0; column < GAME_GRID_SIZE_X; ++column) {
+				mStonesActions[column][row] = 0;
 				mPositions[column][row].column = posX + column * STONE_SIZE_X;
 				mPositions[column][row].row = posY + row * STONE_SIZE_Y;
 				King::Engine::Texture color = getRandomStoneColor();
@@ -401,6 +468,22 @@ namespace King {
 					color = getRandomStoneColor();
 				}
 				mColors[column][row] = color;
+//=======
+//		float posX = pos_x_ini, posY = pos_y_ini;
+//		for (int row = 0; row < 8; ++row) {
+//			for (int column = 0; column < 8; ++column) {
+//				mStonesActions[row][column] = 0;
+//				mPositions[row][column].first = posX + column * pos_increment;
+//				mPositions[row][column].second = posY + row * pos_increment;
+//				
+//				King::Engine::Texture color;
+//				do {
+//					color = (King::Engine::Texture)(rand() % 5 + 1);
+//				} while ((row >= 2 && mColors[row - 1][column] == color && mColors[row - 2][column] == color)
+//					|| (column >= 2 && mColors[row][column - 1] == color && mColors[row][column - 2] == color));
+//
+//				mColors[row][column] = color;
+//>>>>>>> 4be37af... add swapp animation
 			}
 		}
 	}
@@ -431,4 +514,36 @@ namespace King {
 	const King::Engine::Texture(&Engine::GameGrid::getStoneColors() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y] {
 		return mColors;
 	}
+//<<<<<<< HEAD
+//=======
+
+	const unsigned int Engine::GameGrid::getStoneActions(int column, int row)
+	{
+		return mStonesActions[column][row];
+	}
+
+	unsigned int(&Engine::GameGrid::getStoneActionGrid())[8][8]
+	{
+		return mStonesActions;
+	}
+
+	//const bool(&Engine::GameGrid::getStoneVisited() const)[8][8]
+	//{
+	//	return mVisited;
+	//}
+
+	//void Engine::GameGrid::setStoneVisited(const int row, const int column, bool visited)
+	//{
+	//	// check for writting out of bounds
+	//	if (row >= 0 && row < 8 && column >= 0 && column < 8) {
+	//		mVisited[row][column] = visited;
+	//	}
+	//}
+
+	std::list<King::Engine::actionsAnimation>* Engine::GameGrid::getAnimations()
+	{
+		return &mAnimations;
+	}
+
+//>>>>>>> 4be37af... add swapp animation
 }

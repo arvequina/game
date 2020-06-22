@@ -47,6 +47,21 @@ namespace King {
 			TEXTURE_MAX
 		};
 
+		enum ActionsFromGestures {
+			From_Down,
+			From_Up,
+			From_Left,
+			From_Right
+		};
+
+		typedef struct{
+			int column;
+			int row;
+			ActionsFromGestures action;
+			Texture incomingColor;
+			unsigned int startTime;
+		} actionsAnimation;
+
 		Engine(const char* assetsDirectory);
 		~Engine();
 
@@ -77,6 +92,8 @@ namespace King {
 
 		bool isTimeOver();
 		void waitFor(float waitTime) const;
+		void doAnimations();
+		void addAction(const int column, const int row, const ActionsFromGestures action, const King::Engine::Texture color);
 		float getCurrentTime() const;
 		void printTimeLeft();
 
