@@ -34,6 +34,7 @@ private:
 	void findStonesSameColorInRow(vectorOfPositions &combos, King::Engine::Texture color, const int column, const int row);
 	
 	void tryToSwapStones(const position<int> originIndex, const position<int> endIndex);
+	void swap(const position<int> originIndex, const position<int> endIndex, pairOfActions stoneMoveAction);
 	void calculateStoneOriginPosition();
 	void calculateStoneEndPosition();
 	position<int> calculateMouseGridPosition();
