@@ -78,6 +78,7 @@ namespace King {
 			, mQuit(false)
 			, mUpdater(nullptr)
 			, mElapsedTicks(static_cast<float>(SDL_GetTicks()))
+			, mGameGrid(new GameGrid)
 		{}
 
 		void Start();
@@ -114,9 +115,6 @@ namespace King {
 		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_YELLOW].reset(new SdlSurface(yellow.c_str()));
 		mPimpl->mSdlSurfaceContainer[Engine::TEXTURE_EMPTY].reset(new SdlSurface(transparent.c_str()));
 		mPimpl->mFontSdlSurface.reset(new SdlSurface(font.c_str()));
-
-		// ini gamegrid
-		mPimpl->mGameGrid.reset(new Engine::GameGrid());
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -159,12 +157,8 @@ namespace King {
 		mPimpl->mQuit = true;
 	}
 
-	void Engine::initGame() {
-		initializeGameGrid();
-		initializeTimer();
-	}
-
 	void Engine::Start(Updater& updater) {
+		initializeTimer();
 		mPimpl->mUpdater = &updater;
 		mPimpl->mSdlWindow.Show();
 		mPimpl->Start();
@@ -263,10 +257,6 @@ namespace King {
 
 	int Engine::GetHeight() const {
 		return WindowHeight;
-	}
-
-	void Engine::initializeGameGrid() const {
-		mPimpl->mGameGrid->initialize();
 	}
 
 	float Engine::getCurrentTime() const {
@@ -371,7 +361,7 @@ namespace King {
 		return false;
 	}
 
-	void Engine::gameOverScene() {
+	void Engine::gameIsOver() {
 		waitFor(GAME_OVER_WAIT_TIME);
 		// bye!
 		Quit();

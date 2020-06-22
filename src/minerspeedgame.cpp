@@ -12,14 +12,12 @@ MinerSpeedGame::~MinerSpeedGame() {
 }
 
 void MinerSpeedGame::Start() {
-	mEngine.initGame();
 	mEngine.Start(*this);
 }
 
 void MinerSpeedGame::Update() {
 	if (mEngine.isTimeOver()) {
-		//end game
-		mEngine.gameOverScene();
+		mEngine.gameIsOver();
 		return;
 	}
 	// fill scene with all elements

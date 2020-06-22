@@ -76,9 +76,7 @@ namespace King {
 		bool GetMouseButtonUp() const;
 		void SetMouseButtonUp(const bool state);
 		
-		void initGame();
 		void initializeTimer();
-		void initializeGameGrid() const;
 		void Start(Updater& updater);
 		void Quit();
 
@@ -87,7 +85,7 @@ namespace King {
 		void Render(Texture texture, const glm::mat4& transform, const float scaling = 1.0f);
 		void Render(Texture texture, float x, float y, const float scaling = 1.0f, float rotation = 0.0f);
 		void fillScene();
-		void gameOverScene();
+		void gameIsOver();
 
 		float CalculateStringWidth(const char* text) const;
 		void Write(const char* text, const glm::mat4& transform);
