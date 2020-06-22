@@ -28,6 +28,7 @@ void MinerSpeedGame::Update() {
 		mEngine.gameIsOver();
 		return;
 	}
+
 	// fill scene with all elements
 	mEngine.fillScene();
 	maybeDispatchMouseEvents();
@@ -42,6 +43,7 @@ void MinerSpeedGame::maybeDispatchMouseDownEvent() {
 	if (!mEngine.GetMouseButtonDown()) {
 		return;
 	}
+
 	// first time serves to select stone, then user can drag or just click somewhere else
 	if (!mStoneSelected) {
 		if (mFirst) {
@@ -56,6 +58,7 @@ void MinerSpeedGame::maybeDispatchMouseUpEvent() {
 	if (!mEngine.GetMouseButtonUp()) {
 		return;
 	}
+
 	mFirst = true;
 	mEngine.SetMouseButtonUp(false);
 	position<int> gridEndIndex = calculateMouseGridPosition();
@@ -114,18 +117,18 @@ void MinerSpeedGame::tryToSwapStones(const position<int> originIndex, const posi
 	// allow only one unit difference row or column wise
 	if (endIndex.row >= 0 && abs(originIndex.row - endIndex.row) == 1 && abs(originIndex.column - endIndex.column) == 0) {
 		mEngine.swapStoneColor(originIndex.column, originIndex.row, 0, endIndex.row - originIndex.row);
-		stoneMoveAction = createVerticalStoneMoveAction(originIndex.row - endIndex.row > 0);
+		stoneMoveAction = mAnimationManager->createVerticalAnimationAction(originIndex.row - endIndex.row > 0);
 		// let's swap vertically
 		swap(originIndex, endIndex, stoneMoveAction);
 	} else if (endIndex.column >= 0 && abs(originIndex.column - endIndex.column) == 1 && abs(originIndex.row - endIndex.row) == 0) {
 		mEngine.swapStoneColor(originIndex.column, originIndex.row, endIndex.column - originIndex.column, 0);
-		stoneMoveAction = createHorizontalStoneMoveAction(originIndex.column - endIndex.column > 0);
+		stoneMoveAction = mAnimationManager->createHorizontalAnimationAction(originIndex.column - endIndex.column > 0);
 		// let's swap horizontally
 		swap(originIndex, endIndex, stoneMoveAction);
 	}
 }
 
-void MinerSpeedGame::swap(const position<int> originIndex, const position<int> endIndex, pairOfActions stoneMoveAction) {
+void MinerSpeedGame::swap(const position<int> &originIndex, const position<int> &endIndex, pairOfActions &stoneMoveAction) {
 	// just allow one swap
 	mEngine.SetMouseButtonDown(false);
 	// add moving actions to swaped stones
@@ -141,6 +144,7 @@ void MinerSpeedGame::swap(const position<int> originIndex, const position<int> e
 	} else { // put stones to original location if swap was not possible
 		mEngine.swapStoneColor(originIndex.column, originIndex.row, endIndex.column - originIndex.column, endIndex.row - originIndex.row);
 	}
+
 	bool moreStones = true;
 	while (moreStones) {
 		vectorOfPositions stonesToDestroy = moreStonesToDestroy();
@@ -188,16 +192,19 @@ vectorOfPositions MinerSpeedGame::getStonesToDestroy(const int column, const int
 	if (stonesColumn.size() == 0 && stonesRow.size() == 0) {
 		return vectorOfPositions();
 	}
+
 	// add initial point if other direction is empty
 	if (stonesRow.size() == 0) {
 		stonesColumn.push_back(position<int>(column, row));
 		return stonesColumn;
 	}
+
 	// add initial point if other direction is empty
 	if (stonesColumn.size() == 0) {
 		stonesRow.push_back(position<int>(column, row));
 		return stonesRow;
 	}
+
 	// we get both row and column combinations of stones
 	vectorOfPositions resultBoth;
 	resultBoth.push_back(position<int>(column, row));
@@ -206,7 +213,7 @@ vectorOfPositions MinerSpeedGame::getStonesToDestroy(const int column, const int
 	return resultBoth;
 }
 
-void MinerSpeedGame::findStonesSameColorInColumn(vectorOfPositions &stones, Texture color, const int column, const int row) {
+void MinerSpeedGame::findStonesSameColorInColumn(vectorOfPositions &stones, const Texture &color, const int column, const int row) {
 	// iterate left in the same column and keep the row
 	for (int currentColumn = column - 1; currentColumn >= 0; --currentColumn) {
 		if (color == mEngine.getStoneColors()[currentColumn][row]) {
@@ -215,6 +222,7 @@ void MinerSpeedGame::findStonesSameColorInColumn(vectorOfPositions &stones, Text
 			break;
 		}
 	}
+
 	// iterate right in the same column and keep the row
 	for (int currentColumn = column + 1; currentColumn < GAME_GRID_SIZE_X; ++currentColumn) {
 		if (color == mEngine.getStoneColors()[currentColumn][row]) {
@@ -223,13 +231,14 @@ void MinerSpeedGame::findStonesSameColorInColumn(vectorOfPositions &stones, Text
 			break;
 		}
 	}
+
 	// nothing to do if not found at least 2 stones of same color
 	if (stones.size() < MIN_STONES_COMBO - 1) {
 		stones.clear();
 	}
 }
 
-void MinerSpeedGame::findStonesSameColorInRow(vectorOfPositions &stones, Texture color, const int column, const int row) {
+void MinerSpeedGame::findStonesSameColorInRow(vectorOfPositions &stones, const Texture &color, const int column, const int row) {
 	// iterate down in the same row and keep the column
 	for (int currentRow = row + 1; currentRow < GAME_GRID_SIZE_Y; ++currentRow) {
 		if (color == mEngine.getStoneColors()[column][currentRow]) {
@@ -238,6 +247,7 @@ void MinerSpeedGame::findStonesSameColorInRow(vectorOfPositions &stones, Texture
 			break;
 		}
 	}
+
 	// iterate up in the same row and keep the column
 	for (int currentRow = row - 1; currentRow >= 0; --currentRow) {
 		if (color == mEngine.getStoneColors()[column][currentRow]) {
@@ -246,6 +256,7 @@ void MinerSpeedGame::findStonesSameColorInRow(vectorOfPositions &stones, Texture
 			break;
 		}
 	}
+
 	// nothing to do if not found at least 2 stones of same color
 	if (stones.size() < MIN_STONES_COMBO - 1) {
 		stones.clear();
@@ -256,10 +267,12 @@ void MinerSpeedGame::destroyAndFillStones(const vectorOfPositions &vect) {
 	if (vect.empty()) {
 		return;
 	}
+
 	for (auto nextPos : vect) {
 		mAnimationManager->addAnimation(new Animation(nextPos, ActionFromGesture::DESTROY, mEngine.getStoneColors()[nextPos.column][nextPos.row], mEngine.getCurrentTime()));
 		destroyStone(nextPos);	
 	}
+
 	for (auto nextPos : vect) {
 		assignColorToDestroyedStones(nextPos.column, nextPos.row);
 	}
@@ -275,11 +288,13 @@ void MinerSpeedGame::assignColorToDestroyedStones(const int column, const int ro
 		mEngine.setStoneColor(column, row, King::Engine::getRandomStoneColor());
 		return;
 	}
+
 	// if cell already has a color -> check above
 	if (mEngine.getStoneColors()[column][row] != Texture::TEXTURE_EMPTY) {
 		assignColorToDestroyedStones(column, row - 1);
 		return; 
 	}
+
 	// find stone above that is not empty
 	bool found = false;
 	for (int nextRow = row - 1; nextRow >= 0; --nextRow) {
@@ -291,11 +306,12 @@ void MinerSpeedGame::assignColorToDestroyedStones(const int column, const int ro
 			break;
 		}
 	}
+
 	if (found == false) {
 		mEngine.setStoneColor(column, row, King::Engine::getRandomStoneColor());
 	}
+
 	assignColorToDestroyedStones(column, row - 1);
-	return;
 }
 
 vectorOfPositions MinerSpeedGame::moreStonesToDestroy() {

@@ -1,4 +1,5 @@
-#define GLM_FORCE_RADIANS 
+#ifndef MINERSPEED_HEADER
+#define MINERSPEED_HEADER
 
 #include <iostream>
 #include <list>
@@ -9,9 +10,6 @@
 #include "king/Updater.h"
 #include "common.h"
 #include "animation.h"
-
-typedef std::vector<position<int>> vectorOfPositions;
-typedef std::pair<ActionFromGesture, ActionFromGesture> pairOfActions;
 
 //**********************************************************************
 class MinerSpeedGame : public King::Updater {
@@ -33,11 +31,11 @@ private:
 	void destroyAndFillStones(const vectorOfPositions &vect);
 	void assignColorToDestroyedStones(const int column, const int row);
 
-	void findStonesSameColorInColumn(vectorOfPositions &combos, Texture color, const int column, const int row);
-	void findStonesSameColorInRow(vectorOfPositions &combos, Texture color, const int column, const int row);
+	void findStonesSameColorInColumn(vectorOfPositions &combos, const Texture &color, const int column, const int row);
+	void findStonesSameColorInRow(vectorOfPositions &combos, const Texture &color, const int column, const int row);
 	
 	void tryToSwapStones(const position<int> originIndex, const position<int> endIndex);
-	void swap(const position<int> originIndex, const position<int> endIndex, pairOfActions stoneMoveAction);
+	void swap(const position<int> &originIndex, const position<int> &endIndex, pairOfActions &stoneMoveAction);
 	void calculateStoneOriginPosition();
 	void calculateStoneEndPosition();
 	position<int> calculateMouseGridPosition();
@@ -56,4 +54,4 @@ private:
 	AnimationManager *mAnimationManager;
 };
 
-//**********************************************************************
+#endif // MINERSPEED_HEADER

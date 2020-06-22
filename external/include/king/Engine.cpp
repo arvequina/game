@@ -1,17 +1,12 @@
 #include "Engine.h"
 
-#define GLM_FORCE_RADIANS 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glew/glew.h>
 #include <glm/glm.hpp>
 #include <sdl/Sdl.h>
-#include <iostream>
 #include <string>
 #include <time.h>
-#include <stdexcept>
 #include <algorithm>
-#include <vector>
-#include <list>
 
 #include "Font.h"
 #include "GlContext.h"

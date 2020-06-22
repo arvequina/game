@@ -59,9 +59,11 @@ void AnimationManager::renderAnimations(King::Engine *engine) {
 					pos_y_ini + engine->getStonePositions()[animation->stoneIndex().column][animation->stoneIndex().row].row, scaling);
 			}
 		}
+
 		if (done) {
 			animations->clear();
 		}
+
 	} else {
 		// reset action grid
 		resetStonesActionGrid();
@@ -76,11 +78,34 @@ unsigned int(&AnimationManager::getStoneActionGrid())[GAME_GRID_SIZE_X][GAME_GRI
 	return mStonesActions;
 }
 
-void AnimationManager::resetStonesActionGrid()
-{
+void AnimationManager::resetStonesActionGrid() {
 	for (int row = 0; row < GAME_GRID_SIZE_Y; ++row) {
 		for (int column = 0; column < GAME_GRID_SIZE_X; ++column) {
 			mStonesActions[column][row] = 0;
 		}
 	}
+}
+
+pairOfActions AnimationManager::createVerticalAnimationAction(bool upDirection) {
+	pairOfActions animationAction;
+	if (upDirection) {
+		animationAction.first = ActionFromGesture::FROM_DOWN;
+		animationAction.second = ActionFromGesture::FROM_UP;
+	} else {
+		animationAction.first = ActionFromGesture::FROM_UP;
+		animationAction.second = ActionFromGesture::FROM_DOWN;
+	}
+	return animationAction;
+}
+
+pairOfActions AnimationManager::createHorizontalAnimationAction(bool leftDirection) {
+	pairOfActions animationAction;
+	if (leftDirection) {
+		animationAction.first = ActionFromGesture::FROM_LEFT;
+		animationAction.second = ActionFromGesture::FROM_RIGHT;
+	} else {
+		animationAction.first = ActionFromGesture::FROM_RIGHT;
+		animationAction.second = ActionFromGesture::FROM_LEFT;
+	}
+	return animationAction;
 }

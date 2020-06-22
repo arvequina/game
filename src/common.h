@@ -1,4 +1,7 @@
-#pragma once
+#ifndef COMMON_HEADER
+#define COMMON_HEADER
+
+#include <vector>
 
 enum Texture {
 	TEXTURE_BACKGROUND,
@@ -12,7 +15,6 @@ enum Texture {
 };
 
 enum ActionFromGesture {
-	STILL,
 	FROM_DOWN,
 	FROM_UP,
 	FROM_LEFT,
@@ -38,6 +40,9 @@ public:
 	T row;
 };
 
+typedef std::vector<position<int>> vectorOfPositions;
+typedef std::pair<ActionFromGesture, ActionFromGesture> pairOfActions;
+
 constexpr auto WINDOW_WITDH = 755;
 constexpr auto WINDOW_HEIGHT = 600;
 constexpr auto POS_TIME_LEFT_TEXT_X = 50.0f;
@@ -58,3 +63,5 @@ constexpr auto MAX_GAME_TIME = 60.0f;
 constexpr auto ANIMATION_DURATION = 1.0f;
 constexpr auto GAME_OVER_WAIT_TIME = 3.0f;
 constexpr auto FPS = 60.0f;
+
+#endif // COMMON_HEADER
