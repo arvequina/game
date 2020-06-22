@@ -92,7 +92,7 @@ namespace King {
 
 		bool isTimeOver();
 		void waitFor(float waitTime) const;
-		void doAnimations();
+		void renderAnimations();
 		void addAction(const int column, const int row, const ActionsFromGestures action, const King::Engine::Texture color);
 		float getCurrentTime() const;
 		void printTimeLeft();
