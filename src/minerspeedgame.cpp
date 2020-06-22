@@ -307,8 +307,3 @@ vectorOfPositions MinerSpeedGame::moreStonesToDestroy() {
 	}
 	return stonesToDestroy;
 }
-
-// FIXME: rotation just in case
-//const char text[] = "This rotates at 5/PI Hz";
-//mRotation += mEngine.GetLastFrameSeconds();
-//mEngine.Write(text, mEngine.GetWidth() / 2.0f, mEngine.GetHeight() / 2.0f, mRotation * 2.5f);
