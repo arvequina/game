@@ -18,7 +18,6 @@ constexpr auto POS_TIME_LEFT_TEXT_X = 50.0f;
 constexpr auto POS_TIME_LEFT_TEXT_Y = 390.0f;
 constexpr auto POS_TIME_LEFT_NUM_X = 110.0f;
 constexpr auto POS_TIME_LEFT_NUM_Y = 420.0f;
-constexpr auto OFFSET_RENDER = 25.0f;
 constexpr auto STONE_SIZE_X = 43;
 constexpr auto STONE_SIZE_Y = 43;
 constexpr auto MIN_STONES_COMBO = 3;
@@ -26,9 +25,11 @@ constexpr auto GAME_GRID_SIZE_X = 8;
 constexpr auto GAME_GRID_SIZE_Y = 8;
 constexpr auto RENDER_GRID_SIZE_X = STONE_SIZE_X * GAME_GRID_SIZE_X;
 constexpr auto RENDER_GRID_SIZE_Y = STONE_SIZE_Y * GAME_GRID_SIZE_Y;
+constexpr auto OFFSET_RENDER_Y = 25.0f;
 constexpr auto GRID_POS_BEGIN_X = 330.0f;
 constexpr auto GRID_POS_BEGIN_Y = 75.0f;
-constexpr auto MAX_GAME_TIME = 60.0f;
+constexpr auto MAX_GAME_TIME = 600.0f;
+constexpr auto ANIMATION_DURATION = 1.0f;
 constexpr auto GAME_OVER_WAIT_TIME = 3.0f;
 constexpr auto FPS = 60.0f;
 
@@ -48,10 +49,11 @@ namespace King {
 		};
 
 		enum ActionsFromGestures {
-			From_Down,
-			From_Up,
-			From_Left,
-			From_Right
+			FROM_DOWN,
+			FROM_UP,
+			FROM_LEFT,
+			FROM_RIGHT,
+			DESTROY
 		};
 
 		typedef struct{
@@ -81,8 +83,8 @@ namespace King {
 
 		int GetTextureHeight(Texture texture) const;
 		int GetTextureWidth(Texture texture) const;
-		void Render(Texture texture, const glm::mat4& transform);
-		void Render(Texture texture, float x, float y, float rotation = 0.0f);
+		void Render(Texture texture, const glm::mat4& transform, const float scaling = 1.0f);
+		void Render(Texture texture, float x, float y, const float scaling = 1.0f, float rotation = 0.0f);
 		void fillScene();
 		void gameOverScene();
 
@@ -93,7 +95,7 @@ namespace King {
 		bool isTimeOver();
 		void waitFor(float waitTime) const;
 		void renderAnimations();
-		void addAction(const int column, const int row, const ActionsFromGestures action, const King::Engine::Texture color);
+		void addStoneAction(const int column, const int row, const ActionsFromGestures action);
 		float getCurrentTime() const;
 		void printTimeLeft();
 

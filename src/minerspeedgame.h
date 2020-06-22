@@ -9,6 +9,7 @@
 #include "king/Updater.h"
 
 typedef std::vector<position<int>> vectorOfPositions;
+typedef std::pair<King::Engine::ActionsFromGestures, King::Engine::ActionsFromGestures> pairOfActions;
 
 //**********************************************************************
 class MinerSpeedGame : public King::Updater {
@@ -37,6 +38,8 @@ private:
 	void calculateStoneEndPosition();
 	position<float> translateMouseToGridPosition() const;
 	position<int> MinerSpeedGame::getAndConvertMousePositionToGridIndex();
+	pairOfActions createVerticalStoneMoveAction(bool upDirection);
+	pairOfActions createHorizontalStoneMoveAction(bool leftDirection);
 	
 	King::Engine mEngine;
 	float mRotation;

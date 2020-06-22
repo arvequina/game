@@ -39,7 +39,8 @@ namespace King {
 		void swapStoneColor(const int column, const int row, const int directionX, const int directionY);
 		void setStoneColor(const int column, const int row, King::Engine::Texture color);
 		const unsigned int getStoneActions(int column, int row);
-		unsigned int(&getStoneActionGrid())[8][8];
+		unsigned int(&getStoneActionGrid())[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
+		void resetStonesActionGrid();
 		std::list<King::Engine::actionsAnimation>* getAnimations();
 	private:
 		position<float> mPositions[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
@@ -177,25 +178,25 @@ namespace King {
 		return mPimpl->mSdlSurfaceContainer[texture]->Width();
 	}
 
-	void Engine::Render(Engine::Texture texture, const glm::mat4& transform) {
+	void Engine::Render(Engine::Texture texture, const glm::mat4& transform, const float scaling) {
 		glLoadMatrixf(reinterpret_cast<const float*>(&transform));
 		SdlSurface& surface = *mPimpl->mSdlSurfaceContainer[texture];
 		surface.Bind();
 		glBegin(GL_QUADS);
-		glTexCoord2i(0, 1); glVertex2i(0, surface.Height());
-		glTexCoord2i(1, 1); glVertex2i(surface.Width(), surface.Height());
-		glTexCoord2i(1, 0); glVertex2i(surface.Width(), 0);
+		glTexCoord2i(0, 1); glVertex2i(0, surface.Height() * scaling);
+		glTexCoord2i(1, 1); glVertex2i(surface.Width() * scaling, surface.Height() * scaling);
+		glTexCoord2i(1, 0); glVertex2i(surface.Width() * scaling, 0);
 		glTexCoord2i(0, 0); glVertex2i(0, 0);
 		glEnd();
 	}
 
-	void Engine::Render(Texture texture, float x, float y, float rotation) {
+	void Engine::Render(Texture texture, float x, float y, const float scaling, float rotation) {
 		glm::mat4 transformation;
 		transformation = glm::translate(transformation, glm::vec3(x, y, 0.0f));
 		if (rotation) {
 			transformation = glm::rotate(transformation, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
 		}
-		Render(texture, transformation);
+		Render(texture, transformation, scaling);
 	}
 
 	Glyph& FindGlyph(char c) {
@@ -275,7 +276,7 @@ namespace King {
 	void Engine::fillScene() {
 		Render(King::Engine::TEXTURE_BACKGROUND, 0.0f, 0.0f);
 		const float pos_x_ini = GRID_POS_BEGIN_X;
-		const float pos_y_ini = GRID_POS_BEGIN_Y + OFFSET_RENDER;
+		const float pos_y_ini = GRID_POS_BEGIN_Y + OFFSET_RENDER_Y;
 		// nested loop of 8 by 8 (low computing cost)
 		for (int row = 0; row < GAME_GRID_SIZE_Y; ++row) {
 			for (int column = 0; column < GAME_GRID_SIZE_X; ++column) {
@@ -306,47 +307,53 @@ namespace King {
 		if (actions->size() > 0) {
 			bool done = false;
 			for (auto action: *actions) {
-				if (currentTick - action.startTime >= 500) { // animation done
+				if (currentTick - action.startTime > ANIMATION_DURATION * 1000.0f) { // animation done
 					mPimpl->mGameGrid->getStoneActionGrid()[action.column][action.row]--;
 					done = true;
 				} else { // do animation
-					float pos_x_ini = 330.0f;
-					float pos_y_ini = 100.0f;
-					float timeRemaining = 500 - (currentTick - action.startTime);
-					float offsetAnimation = timeRemaining * 43.f / 500.0f;
+					float scaling = 1.0f;
+					float pos_x_ini = GRID_POS_BEGIN_X;
+					float pos_y_ini = GRID_POS_BEGIN_Y + OFFSET_RENDER_Y;
+					float timeRemaining = ANIMATION_DURATION * 1000.0f - (currentTick - action.startTime);
+					float offsetAnimation = timeRemaining * static_cast<float>(STONE_SIZE_X) / (ANIMATION_DURATION * 1000.0f);
 					switch (action.action)
 					{
-					case Engine::ActionsFromGestures::From_Down:
+					case Engine::ActionsFromGestures::FROM_DOWN:
 						pos_y_ini += offsetAnimation;
 						break;
-					case Engine::ActionsFromGestures::From_Up:
+					case Engine::ActionsFromGestures::FROM_UP:
 						pos_y_ini -= offsetAnimation;
 						break;
-					case Engine::ActionsFromGestures::From_Left:
+					case Engine::ActionsFromGestures::FROM_LEFT:
 						pos_x_ini += offsetAnimation;
 						break;
-					case Engine::ActionsFromGestures::From_Right:
+					case Engine::ActionsFromGestures::FROM_RIGHT:
 						pos_x_ini -= offsetAnimation;
+						break;
+					case Engine::ActionsFromGestures::DESTROY:
+						scaling = 0.0f;
 						break;
 					}
 					Render(action.incomingColor, pos_x_ini + mPimpl->mGameGrid->getStonePositions()[action.column][action.row].column,
-						pos_y_ini + mPimpl->mGameGrid->getStonePositions()[action.column][action.row].row);
+						pos_y_ini + mPimpl->mGameGrid->getStonePositions()[action.column][action.row].row, scaling);
 				}
 			}
 			if (done) {
 				actions->clear();
 			}
+		} else {
+			// reset action grid
+			mPimpl->mGameGrid->resetStonesActionGrid();
 		}
 	}
 
-	void Engine::addAction(const int column, const int row, const ActionsFromGestures actionGesture, const King::Engine::Texture color)
-	{
+	void Engine::addStoneAction(const int column, const int row, const ActionsFromGestures actionGesture) {
 		std::list<King::Engine::actionsAnimation> *actions = mPimpl->mGameGrid->getAnimations();
 		King::Engine::actionsAnimation action;
 		action.action = actionGesture;
 		action.column = column;
 		action.row = row;
-		action.incomingColor = color;
+		action.incomingColor = getStoneColors()[column][row];
 		action.startTime = SDL_GetTicks();
 		mPimpl->mGameGrid->getStoneActionGrid()[column][row]++;
 		actions->push_back(action);
@@ -501,9 +508,18 @@ namespace King {
 		return mStonesActions[column][row];
 	}
 
-	unsigned int(&Engine::GameGrid::getStoneActionGrid())[8][8]
+	unsigned int(&Engine::GameGrid::getStoneActionGrid())[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y]
 	{
 		return mStonesActions;
+	}
+
+	void Engine::GameGrid::resetStonesActionGrid()
+	{
+		for (int row = 0; row < GAME_GRID_SIZE_Y; ++row) {
+			for (int column = 0; column < GAME_GRID_SIZE_X; ++column) {
+				mStonesActions[column][row] = 0;
+			}
+		}
 	}
 
 	std::list<King::Engine::actionsAnimation>* Engine::GameGrid::getAnimations()

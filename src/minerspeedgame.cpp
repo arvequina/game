@@ -85,30 +85,16 @@ void MinerSpeedGame::maybeDispatchMouseUpEvent() {
 void MinerSpeedGame::tryToSwapStones(const int originColumn, const int originRow, const int endColumn, const int endRow) {
 	// only allow row and column-wise moves
 	int swaped = false;
-	King::Engine::ActionsFromGestures actionOne, actionTwo;
+	pairOfActions stoneMoveAction;
 	if (endRow >= 0 && abs(originRow - endRow) == 1) {
 		swaped = true;
 		mEngine.swapStoneColor(originColumn, originRow, 0, endRow - originRow);
-		if (originRow - endRow > 0) {
-			actionOne = King::Engine::ActionsFromGestures::From_Down;
-			actionTwo = King::Engine::ActionsFromGestures::From_Up;
-		}
-		else {
-			actionOne = King::Engine::ActionsFromGestures::From_Up;
-			actionTwo = King::Engine::ActionsFromGestures::From_Down;
-		}
+		stoneMoveAction = createVerticalStoneMoveAction(originRow - endRow > 0);
 	} else if (endColumn >= 0 && abs(originColumn - endColumn) == 1) {
 		// if condition to do swap (3+ stones same color) then do swap
 		swaped = true;
 		mEngine.swapStoneColor(originColumn, originRow, endColumn - originColumn, 0);
-		if (originColumn - endColumn > 0) {
-			actionOne = King::Engine::ActionsFromGestures::From_Left;
-			actionTwo = King::Engine::ActionsFromGestures::From_Right;
-		}
-		else {
-			actionOne = King::Engine::ActionsFromGestures::From_Right;
-			actionTwo = King::Engine::ActionsFromGestures::From_Left;
-		}
+		stoneMoveAction = createHorizontalStoneMoveAction(originColumn - endColumn > 0);
 	}
 
 	if (swaped) {
@@ -118,8 +104,9 @@ void MinerSpeedGame::tryToSwapStones(const int originColumn, const int originRow
 		if (mEngine.getStoneColors()[originColumn][originRow] == mEngine.getStoneColors()[endColumn][endRow]) {
 			return;
 		}
-	    mEngine.addAction(endColumn, endRow, actionOne, mEngine.getStoneColors()[endColumn][endRow]);
-        mEngine.addAction(originColumn, originRow, actionTwo, mEngine.getStoneColors()[originColumn][originRow]);
+		// add moving actions to swaped stones
+	    mEngine.addStoneAction(endColumn, endRow, stoneMoveAction.first);
+        mEngine.addStoneAction(originColumn, originRow, stoneMoveAction.second);
 		vectorOfPositions destroyOriginStones, destroyEndStones;
 		destroyOriginStones = getStonesToDestroy(originColumn, originRow);
 		destroyEndStones    = getStonesToDestroy(endColumn, endRow);
@@ -138,6 +125,30 @@ void MinerSpeedGame::tryToSwapStones(const int originColumn, const int originRow
 			}
 		}
 	}
+}
+
+pairOfActions MinerSpeedGame::createVerticalStoneMoveAction(bool upDirection) {
+	pairOfActions moveAction;
+	if (upDirection) {
+		moveAction.first = King::Engine::ActionsFromGestures::FROM_DOWN;
+		moveAction.second = King::Engine::ActionsFromGestures::FROM_UP;
+	} else {
+		moveAction.first = King::Engine::ActionsFromGestures::FROM_UP;
+		moveAction.second = King::Engine::ActionsFromGestures::FROM_DOWN;
+	}
+	return moveAction;
+}
+
+pairOfActions MinerSpeedGame::createHorizontalStoneMoveAction(bool leftDirection) {
+	pairOfActions moveAction;
+	if (leftDirection) {
+		moveAction.first = King::Engine::ActionsFromGestures::FROM_LEFT;
+		moveAction.second = King::Engine::ActionsFromGestures::FROM_RIGHT;
+	} else {
+		moveAction.first = King::Engine::ActionsFromGestures::FROM_RIGHT;
+		moveAction.second = King::Engine::ActionsFromGestures::FROM_LEFT;
+	}
+	return moveAction;
 }
 
 vectorOfPositions MinerSpeedGame::getStonesToDestroy(const int column, const int row) {
@@ -218,9 +229,11 @@ void MinerSpeedGame::findStonesSameColorInRow(vectorOfPositions &stones, King::E
 }
 
 void MinerSpeedGame::destroyAndFillStones(const vectorOfPositions &vect) {
-	// first destroy all stones to be destroyed
+	if (vect.empty()) {
+		return;
+	}
 	for (auto nextPos : vect) {
-		// FIXME: try to add animation here somehow
+		mEngine.addStoneAction(nextPos.column, nextPos.row, King::Engine::ActionsFromGestures::DESTROY);
 		destroyStone(nextPos);	
 	}
 	for (auto nextPos : vect) {
@@ -267,7 +280,7 @@ vectorOfPositions MinerSpeedGame::moreStonesToDestroy() {
 	bool exitLoop = false;
 	for (int y = 0; y < GAME_GRID_SIZE_Y; ++y) {
 		for (int x = 0; x < GAME_GRID_SIZE_X; ++x) {
-			stonesToDestroy = getStonesToDestroy(y, x);
+			stonesToDestroy = getStonesToDestroy(x, y);
 			if (!stonesToDestroy.empty()) {
 				exitLoop = true;
 				break;
