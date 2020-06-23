@@ -5,21 +5,22 @@
 #include <vector>
 
 AnimationManager::AnimationManager() 
-	: mAnimations(new std::vector<Animation*>()) {
+	: mAnimations(new std::vector<std::shared_ptr<Animation>>()) {
 	resetStonesActionGrid();
 }
 
 AnimationManager::~AnimationManager() {
+	// no need to delete internal pointers in vector as they are shared pointers
 	delete mAnimations;
 }
 
-void AnimationManager::addAnimation(Animation *animation) {
+void AnimationManager::addAnimation(std::shared_ptr<Animation> animation) {
 	mAnimations->push_back(animation);
 	// increment stone action grid
 	getStoneActionGrid()[animation->stoneIndex().column][animation->stoneIndex().row]++;
 }
 
-std::vector<Animation*> *AnimationManager::getAnimations() const {
+std::vector<std::shared_ptr<Animation>> *AnimationManager::getAnimations() const {
 	return mAnimations;
 }
 

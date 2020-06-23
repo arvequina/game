@@ -2,8 +2,10 @@
 #define ANIMATION_MANAGER_HEADER
 
 #include <vector>
+#include <memory>
 #include "animation.h"
 #include "common.h"
+
 
 namespace King {
 	class Engine;
@@ -14,8 +16,8 @@ public:
 	AnimationManager();
 	~AnimationManager();
 
-	void addAnimation(Animation *animation);
-	std::vector<Animation*> *getAnimations() const;
+	void addAnimation(std::shared_ptr<Animation> animation);
+	std::vector<std::shared_ptr<Animation>> *getAnimations() const;
 	void checkAnimationsToRender(King::Engine *engine);
 	void renderAnimations(King::Engine *engine);
 	const unsigned int getStoneActions(const int column, const int row);
@@ -25,7 +27,7 @@ public:
 	pairOfActions createHorizontalAnimationAction(bool leftDirection);
 
 private:
-	std::vector<Animation*> *mAnimations;
+	std::vector<std::shared_ptr<Animation>> *mAnimations;
 	unsigned int mStonesActions[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
 
 };

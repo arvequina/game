@@ -131,9 +131,16 @@ void MinerSpeedGame::tryToSwapStones(const position<int> originIndex, const posi
 void MinerSpeedGame::swap(const position<int> &originIndex, const position<int> &endIndex, pairOfActions &stoneMoveAction) {
 	// just allow one swap
 	mEngine.SetMouseButtonDown(false);
-	// add moving actions to swaped stones
-	mAnimationManager->addAnimation(new Animation(endIndex, stoneMoveAction.first, mEngine.getStoneColors()[endIndex.column][endIndex.row], mEngine.getCurrentTime()));
-	mAnimationManager->addAnimation(new Animation(originIndex, stoneMoveAction.second, mEngine.getStoneColors()[originIndex.column][originIndex.row], mEngine.getCurrentTime()));
+	// add moving actions to animation
+	mAnimationManager->addAnimation(std::make_shared<Animation>(Animation(endIndex, 
+		                                                                  stoneMoveAction.first, 
+		                                                                  mEngine.getStoneColors()[endIndex.column][endIndex.row], 
+		                                                                  mEngine.getCurrentTime())));
+
+	mAnimationManager->addAnimation(std::make_shared<Animation>(Animation(originIndex, 
+		                                                                  stoneMoveAction.second, 
+		                                                                  mEngine.getStoneColors()[originIndex.column][originIndex.row], 
+		                                                                  mEngine.getCurrentTime())));
 	
     vectorOfPositions destroyOriginStones, destroyEndStones;
 	destroyOriginStones = getStonesToDestroy(originIndex.column, originIndex.row);
@@ -269,7 +276,10 @@ void MinerSpeedGame::destroyAndFillStones(const vectorOfPositions &vect) {
 	}
 
 	for (auto nextPos : vect) {
-		mAnimationManager->addAnimation(new Animation(nextPos, ActionFromGesture::DESTROY, mEngine.getStoneColors()[nextPos.column][nextPos.row], mEngine.getCurrentTime()));
+		mAnimationManager->addAnimation(std::make_shared<Animation>(Animation(nextPos, 
+			                                                                  ActionFromGesture::DESTROY,
+			                                                                  mEngine.getStoneColors()[nextPos.column][nextPos.row],
+			                                                                  mEngine.getCurrentTime())));
 		destroyStone(nextPos);	
 	}
 
