@@ -274,12 +274,11 @@ namespace King {
 	}
 
 	void Engine::printTimeLeft() {
-		if (mTimeLeft < 0.01f) {
-			Write("Game over", POS_TIME_LEFT_TEXT_X, POS_TIME_LEFT_TEXT_Y);
-		} else {
-			Write("Time Left", POS_TIME_LEFT_TEXT_X, POS_TIME_LEFT_TEXT_Y);
-			Write(std::to_string(static_cast<int>(mTimeLeft)).c_str(), POS_TIME_LEFT_NUM_X, POS_TIME_LEFT_NUM_Y);
+		if (mTimeLeft < 0.05f) {
+			Write("GAME OVER", POS_TIME_LEFT_TEXT_X, POS_TIME_LEFT_TEXT_Y - OFFSET_GAME_OVER);
 		}
+		Write("Time Left", POS_TIME_LEFT_TEXT_X, POS_TIME_LEFT_TEXT_Y);
+		Write(std::to_string(static_cast<int>(mTimeLeft)).c_str(), POS_TIME_LEFT_NUM_X, POS_TIME_LEFT_NUM_Y);
 	}
 	void Engine::checkAnimationsToRender() {
 		mAnimationManager->renderAnimations(this);

@@ -52,7 +52,11 @@ void AnimationManager::renderAnimations(King::Engine *engine) {
 					pos_x_ini -= offsetAnimation;
 					break;
 				case ActionFromGesture::DESTROY:
-					scaling = 0.0f;
+					scaling = ANIMATION_SCALING;
+					pos_x_ini += STONE_SIZE_X * (1.0f - scaling) * 0.5f;
+					pos_y_ini += STONE_SIZE_Y * (1.0f - scaling) * 0.5f;
+					break;
+				default:
 					break;
 				}
 				engine->Render(animation->stoneColor(), pos_x_ini + engine->getStonePositions()[animation->stoneIndex().column][animation->stoneIndex().row].column,
