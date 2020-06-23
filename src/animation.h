@@ -13,16 +13,20 @@ public:
 		: mStoneIndex(stoneIndex)
 		, mAction(action)
 		, mStoneColor(stoneColor)
-		, mStartTime(startTime) {}
+		, mStartTime(startTime)
+	    , mFinished(false) {}
 	position<int>& stoneIndex() { return mStoneIndex; }
 	ActionFromGesture& action() { return mAction; }
 	Texture& stoneColor() { return mStoneColor; }
 	float startTime() { return mStartTime; }
+	bool isFinished() { return mFinished; }
+	void setFinished(const bool finished) { mFinished = finished; }
 private:
 	position<int> mStoneIndex;
 	ActionFromGesture mAction;
 	Texture mStoneColor;
 	float mStartTime;
+	bool mFinished;
 };
 
 #endif // ANIMATION_HEADER

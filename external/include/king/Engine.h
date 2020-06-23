@@ -24,10 +24,9 @@ namespace King {
 		void Start(Updater& updater);
 		void Quit();
 
-		int GetTextureHeight(const Texture texture) const;
-		int GetTextureWidth(const Texture texture) const;
 		void Render(const Texture texture, const glm::mat4& transform, const float scaling = 1.0f);
 		void Render(const Texture texture, const float x, const float y, const float scaling = 1.0f, float rotation = 0.0f);
+		void checkAnimationsToRender();
 		void fillScene();
 		void gameIsOver();
 
@@ -37,7 +36,6 @@ namespace King {
 
 		bool isTimeOver();
 		void waitFor() const;
-		void checkAnimationsToRender();
 		float getCurrentTime() const;
 		void printTimeLeft();
 
@@ -47,17 +45,18 @@ namespace King {
 		void setStoneColor(const int column, const int row, const Texture color);
 		const Texture(&getStoneColors() const)[GAME_GRID_SIZE_X][GAME_GRID_SIZE_Y];
 		
-	
 		int GetWidth() const;
 		int GetHeight() const;
+		int GetTextureHeight(const Texture texture) const;
+		int GetTextureWidth(const Texture texture) const;
 
 	private:
 		struct EngineImplementation;
 		class GameGrid;
 		std::unique_ptr<EngineImplementation> mPimpl;
 		std::unique_ptr<GameGrid> mGameGrid;
+		std::unique_ptr<AnimationManager> mAnimationManager;
 		float mStartTime;
 		float mTimeLeft;
-		std::unique_ptr<AnimationManager> mAnimationManager;
 	};
 }

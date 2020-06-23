@@ -2,10 +2,10 @@
 
 #include "../external/include/king/Engine.h"
 #include <sdl/Sdl.h>
+#include <vector>
 
 AnimationManager::AnimationManager() 
-	: mAnimations(new std::vector<Animation*>())
-{
+	: mAnimations(new std::vector<Animation*>()) {
 	resetStonesActionGrid();
 }
 
@@ -23,54 +23,62 @@ std::vector<Animation*> *AnimationManager::getAnimations() const {
 	return mAnimations;
 }
 
-void AnimationManager::renderAnimations(King::Engine *engine) {
-	auto animations = getAnimations();
-	unsigned int currentTick = SDL_GetTicks();
-	if (!animations->empty()) {
-		bool done = false;
-		for (auto animation : *animations) {
-			if (currentTick - animation->startTime() > ANIMATION_DURATION * 1000.0f) { // animation done
-				getStoneActionGrid()[animation->stoneIndex().column][animation->stoneIndex().row]--;
-				done = true;
-			} else { // do animation
-				float scaling = 1.0f;
-				float pos_x_ini = GRID_POS_BEGIN_X;
-				float pos_y_ini = GRID_POS_BEGIN_Y + OFFSET_RENDER_Y;
-				float timeRemaining = ANIMATION_DURATION * 1000.0f - (currentTick - animation->startTime());
-				float offsetAnimation = timeRemaining * static_cast<float>(STONE_SIZE_X) / (ANIMATION_DURATION * 1000.0f);
-				switch (animation->action()) {
-				case ActionFromGesture::FROM_DOWN:
-					pos_y_ini += offsetAnimation;
-					break;
-				case ActionFromGesture::FROM_UP:
-					pos_y_ini -= offsetAnimation;
-					break;
-				case ActionFromGesture::FROM_LEFT:
-					pos_x_ini += offsetAnimation;
-					break;
-				case ActionFromGesture::FROM_RIGHT:
-					pos_x_ini -= offsetAnimation;
-					break;
-				case ActionFromGesture::DESTROY:
-					scaling = ANIMATION_SCALING;
-					pos_x_ini += STONE_SIZE_X * (1.0f - scaling) * 0.5f;
-					pos_y_ini += STONE_SIZE_Y * (1.0f - scaling) * 0.5f;
-					break;
-				default:
-					break;
-				}
-				engine->Render(animation->stoneColor(), pos_x_ini + engine->getStonePositions()[animation->stoneIndex().column][animation->stoneIndex().row].column,
-					pos_y_ini + engine->getStonePositions()[animation->stoneIndex().column][animation->stoneIndex().row].row, scaling);
-			}
-		}
-
-		if (done) {
-			animations->clear();
-		}
-
+void AnimationManager::checkAnimationsToRender(King::Engine *engine) {
+	if (!getAnimations()->empty()) {
+		renderAnimations(engine);
 	} else {
 		// reset action grid
 		resetStonesActionGrid();
+	}
+}
+
+void AnimationManager::renderAnimations(King::Engine *engine) {
+	unsigned int currentTick = SDL_GetTicks();
+	unsigned int animationsFinished = 0;
+	auto animations = getAnimations();
+	for (auto animation : *animations) {
+		if ((currentTick - animation->startTime() > ANIMATION_DURATION * 1000.0f) || animation->isFinished()) { // animation finishing or already finished
+			getStoneActionGrid()[animation->stoneIndex().column][animation->stoneIndex().row]--;
+			if (!animation->isFinished()) {
+				animation->setFinished(true);
+			}
+			++animationsFinished;
+		} else {
+			// calculate animation parameters
+			float scaling = 1.0f;
+			float offsetPosX = GRID_POS_BEGIN_X;
+			float offsetPosY = GRID_POS_BEGIN_Y + OFFSET_RENDER_Y;
+			float animationRemainingTime = ANIMATION_DURATION * 1000.0f - (currentTick - animation->startTime());
+			float offsetAnimation = animationRemainingTime * static_cast<float>(STONE_SIZE_X) / (ANIMATION_DURATION * 1000.0f);
+
+			switch (animation->action()) {
+			case ActionFromGesture::FROM_DOWN:
+				offsetPosY += offsetAnimation;
+				break;
+			case ActionFromGesture::FROM_UP:
+				offsetPosY -= offsetAnimation;
+				break;
+			case ActionFromGesture::FROM_LEFT:
+				offsetPosX += offsetAnimation;
+				break;
+			case ActionFromGesture::FROM_RIGHT:
+				offsetPosX -= offsetAnimation;
+				break;
+			case ActionFromGesture::DESTROY:
+				scaling = ANIMATION_SCALING;
+				offsetPosX += STONE_SIZE_X * (1.0f - scaling) * 0.5f;
+				offsetPosY += STONE_SIZE_Y * (1.0f - scaling) * 0.5f;
+				break;
+			default:
+				break;
+			}
+			engine->Render(animation->stoneColor(), offsetPosX + engine->getStonePositions()[animation->stoneIndex().column][animation->stoneIndex().row].column,
+				offsetPosY + engine->getStonePositions()[animation->stoneIndex().column][animation->stoneIndex().row].row, scaling);
+		}
+	}
+	// clear animations container if all animations are finished
+	if (animationsFinished == animations->size()) {
+		animations->clear();
 	}
 }
 

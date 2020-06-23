@@ -281,14 +281,14 @@ namespace King {
 		Write(std::to_string(static_cast<int>(mTimeLeft)).c_str(), POS_TIME_LEFT_NUM_X, POS_TIME_LEFT_NUM_Y);
 	}
 	void Engine::checkAnimationsToRender() {
-		mAnimationManager->renderAnimations(this);
+		mAnimationManager->checkAnimationsToRender(this);
 	}
 
 	void Engine::initializeTimer() {
 		mStartTime = getCurrentTime();
 	}
 
-	void Engine::setAnimationManager(AnimationManager* manager) {
+	void Engine::setAnimationManager(AnimationManager *manager) {
 		mAnimationManager.reset(manager);
 	}
 
